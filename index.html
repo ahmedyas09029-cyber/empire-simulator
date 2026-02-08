@@ -1,1 +1,49 @@
-<h1>TEST EMPIRE</h1>.
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Empire Bank</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { background: #0a0a0a; color: white; font-family: sans-serif; text-align: center; padding: 20px; }
+        .gold { color: #d4af37; }
+        .card { 
+            background: linear-gradient(135deg, #111, #222); 
+            border: 1px solid #d4af37; 
+            border-radius: 15px; 
+            padding: 25px; 
+            margin: 20px auto; 
+            max-width: 350px;
+            text-align: left;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        .chip { width: 40px; height: 30px; background: #d4af37; border-radius: 5px; margin-bottom: 20px; }
+        input { background: #1a1a1a; border: 1px solid #333; color: white; padding: 12px; width: 80%; border-radius: 8px; margin: 10px 0; }
+        button { background: #d4af37; color: black; border: none; padding: 12px 30px; border-radius: 8px; font-weight: bold; width: 88%; }
+    </style>
+</head>
+<body>
+    <h1 class="gold">EMPIRE BANK</h1>
+    <div class="card">
+        <div class="chip"></div>
+        <div style="font-size: 1.2rem; letter-spacing: 2px; margin-bottom: 20px;">**** **** **** 0902</div>
+        <div style="font-size: 0.8rem; opacity: 0.6;">CARD HOLDER</div>
+        <div style="font-size: 1rem; margin-bottom: 10px;">AHMED-YASIN</div>
+        <div style="font-size: 0.8rem; opacity: 0.6;">BALANCE</div>
+        <div class="gold" style="font-size: 1.2rem; font-weight: bold;">$ 1,250,000</div>
+    </div>
+    <input type="email" placeholder="Email"><br>
+    <input type="password" placeholder="Password"><br>
+    <button onclick="alert('Access Secured')">LOGIN</button>
+    <div style="margin-top: 30px; max-width: 400px; margin-left: auto; margin-right: auto;">
+        <canvas id="myChart"></canvas>
+    </div>
+    <script>
+        new Chart(document.getElementById('myChart'), {
+            type: 'line',
+            data: { labels: ['Jan', 'Feb', 'Mar', 'Apr'], datasets: [{ label: 'Growth', data: [100, 500, 1000, 1250], borderColor: '#d4af37' }] }
+        });
+    </script>
+</body>
+</html>
