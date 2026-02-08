@@ -1,49 +1,129 @@
-DOCTYPE html>
-<            const symbol = type === 'profit' ? '+' : '-';
-            item.innerHTML = `<span>${reason}</span><span style="color:${color}">${symbol}$${amount.toLocaleString()}</span>`;
-            historyContainer.prepend(item);
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Empire Manager | Secure</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { background: #0a0a0a; color: white; font-family: sans-serif; text-align: center; padding: 15px; margin: 0; }
+        .gold { color: #d4af37; }
+        .card { background: linear-gradient(135deg, #111, #222); border: 1px solid #d4af37; border-radius: 20px; padding: 25px; margin: 20px auto; max-width: 340px; text-align: left; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
+        .input-group { max-width: 340px; margin: 20px auto; background: #111; padding: 20px; border-radius: 15px; border: 1px solid #222; }
+        input, select { background: #1a1a1a; border: 1px solid #333; color: white; padding: 12px; width: 90%; border-radius: 10px; margin: 8px 0; font-size: 1rem; }
+        button { background: #d4af37; color: black; border: none; padding: 15px; border-radius: 10px; font-weight: bold; width: 100%; cursor: pointer; margin-top: 10px; }
+        .history { max-width: 340px; margin: 20px auto; text-align: left; background: #0f0f0f; border-radius: 10px; padding: 15px; border: 1px solid #1a1a1a; }
+        .history-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #222; font-size: 0.9rem; }
+    </style>
+</head>
+<body onload="loadData()">
 
-            // Update Chart
-            chartData.push(currentBalance);
-            labels.push(new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}));
-            updateChart();
+    <h1 class="gold" style="margin-top:30px;">EMPIRE MANAGER</h1>
+    
+    <div class="card">
+        <div style="font-size: 0.8rem; opacity: 0.6;">TOTAL ASSETS</div>
+        <div class="gold" style="font-size: 2.2rem; font-weight: bold;">$ <span id="balance">0</span></div>
+        <div style="margin-top: 10px; font-size: 0.7rem; opacity: 0.4;">OWNER: AHMED-YASIN</div>
+    </div>
 
-            // Clear inputs
+    <div class="input-group">
+        <input type="text" id="reason" placeholder="Label (ex: Vente iPhone)">
+        <input type="number" id="amount" placeholder="Amount ($)">
+        <select id="type">
+            <option value="profit">Profit (+)</option>
+            <option value="expense">Expense (-)</option>
+        </select>
+        <button onclick="addTransaction()">LOG TRANSACTION</button>
+        <button onclick="resetEmpire()" style="background:#222; color:#555; font-size: 0.7rem; margin-top: 15px;">RESET EMPIRE</button>
+    </div>
+
+    <div class="history" id="history-container"></div>
+    <div style="max-width: 380px; margin: auto; padding-bottom: 40px;">
+        <canvas id="growthChart"></canvas>
+    </div>
+
+    <script>
+        let currentBalance = 0;
+        let transactions = [];
+
+        function addTransaction() {
+            const reason = document.getElementById('reason').value;
+            const amount = parseFloat(document.getElementById('amount').value);
+            const type = document.getElementById('type').value;
+
+            if(!reason || isNaN(amount)) return alert("Entrez des données valides");
+
+            const change = type === 'profit' ? amount : -amount;
+            currentBalance += change;
+
+            const newTx = { reason, amount, type, date: new Date().toLocaleTimeString() };
+            transactions.push(newTx);
+            
+            saveData();
+            renderUI();
+            
             document.getElementById('reason').value = "";
             document.getElementById('amount').value = "";
+        }
+
+        function saveData() {
+            localStorage.setItem('empire_balance', currentBalance);
+            localStorage.setItem('empire_txs', JSON.stringify(transactions));
+        }
+
+        function loadData() {
+            const savedBalance = localStorage.getItem('empire_balance');
+            const savedTxs = localStorage.getItem('empire_txs');
+            if(savedBalance) currentBalance = parseFloat(savedBalance);
+            if(savedTxs) transactions = JSON.parse(savedTxs);
+            renderUI();
+        }
+
+        function renderUI() {
+            document.getElementById('balance').innerText = currentBalance.toLocaleString();
+            const container = document.getElementById('history-container');
+            if(transactions.length === 0) {
+                container.innerHTML = '<div style="opacity:0.3;text-align:center;">No activity logged</div>';
+            } else {
+                container.innerHTML = transactions.map(t => `
+                    <div class="history-item">
+                        <span>${t.reason}</span>
+                        <span style="color:${t.type === 'profit' ? '#00ff88' : '#ff4444'}">
+                            ${t.type === 'profit' ? '+' : '-'}$${t.amount.toLocaleString()}
+                        </span>
+                    </div>
+                `).reverse().join('');
+            }
+            updateChart();
         }
 
         let myChart;
         function updateChart() {
             const ctx = document.getElementById('growthChart').getContext('2d');
             if(myChart) myChart.destroy();
+            const dataPoints = [0];
+            let tempBalance = 0;
+            transactions.forEach(t => {
+                tempBalance += (t.type === 'profit' ? t.amount : -t.amount);
+                dataPoints.push(tempBalance);
+            });
+
             myChart = new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Wealth Growth',
-                        data: chartData,
-                        borderColor: '#d4af37',
-                        backgroundColor: 'rgba(212, 175, 55, 0.1)',
-                        fill: true,
-                        tension: 0.4,
-                        borderWidth: 3,
-                        pointRadius: 2
-                    }]
+                    labels: dataPoints.map((_, i) => i),
+                    datasets: [{ label: 'Growth', data: dataPoints, borderColor: '#d4af37', tension: 0.4 }]
                 },
-                options: {
-                    responsive: true,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        y: { grid: { color: '#222' }, ticks: { color: '#555' } },
-                        x: { grid: { display: false }, ticks: { color: '#555' } }
-                    }
-                }
+                options: { plugins: { legend: { display: false } } }
             });
         }
-        updateChart();
+
+        function resetEmpire() {
+            if(confirm("Tout effacer ?")) {
+                localStorage.clear();
+                location.reload();
+            }
+        }
     </script>
 </body>
 </html>
-    
