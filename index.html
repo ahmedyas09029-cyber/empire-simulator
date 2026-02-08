@@ -3,47 +3,143 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Empire Bank</title>
+    <title>Empire Manager | Real Tracking</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        body { background: #0a0a0a; color: white; font-family: sans-serif; text-align: center; padding: 20px; }
+        body { background: #0a0a0a; color: white; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: center; padding: 15px; margin: 0; }
         .gold { color: #d4af37; }
         .card { 
-            background: linear-gradient(135deg, #111, #222); 
+            background: linear-gradient(135deg, #111 0%, #222 100%); 
             border: 1px solid #d4af37; 
-            border-radius: 15px; 
+            border-radius: 20px; 
             padding: 25px; 
             margin: 20px auto; 
-            max-width: 350px;
+            max-width: 340px; 
             text-align: left;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
         }
-        .chip { width: 40px; height: 30px; background: #d4af37; border-radius: 5px; margin-bottom: 20px; }
-        input { background: #1a1a1a; border: 1px solid #333; color: white; padding: 12px; width: 80%; border-radius: 8px; margin: 10px 0; }
-        button { background: #d4af37; color: black; border: none; padding: 12px 30px; border-radius: 8px; font-weight: bold; width: 88%; }
+        .balance-label { font-size: 0.8rem; opacity: 0.6; letter-spacing: 1px; }
+        .balance-amount { font-size: 2.2rem; font-weight: bold; margin-top: 5px; }
+        
+        .input-group { max-width: 340px; margin: 20px auto; background: #111; padding: 20px; border-radius: 15px; border: 1px solid #222; }
+        input, select { 
+            background: #1a1a1a; border: 1px solid #333; color: white; 
+            padding: 12px; width: 90%; border-radius: 10px; margin: 8px 0; font-size: 1rem;
+        }
+        button { 
+            background: #d4af37; color: black; border: none; padding: 15px; 
+            border-radius: 10px; font-weight: bold; width: 100%; cursor: pointer; 
+            margin-top: 10px; transition: 0.3s; font-size: 1rem;
+        }
+        button:hover { background: #f5e1a4; transform: translateY(-2px); }
+        
+        .history { max-width: 340px; margin: 20px auto; text-align: left; background: #0f0f0f; border-radius: 10px; padding: 15px; border: 1px solid #1a1a1a; }
+        .history-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #222; font-size: 0.9rem; }
+        
+        canvas { margin-top: 20px; }
     </style>
 </head>
 <body>
-    <h1 class="gold">EMPIRE BANK</h1>
+
+    <h1 class="gold" style="margin-top:30px;">EMPIRE MANAGER</h1>
+    <p style="opacity: 0.5; font-size: 0.9rem;">Professional Portfolio Tracker</p>
+
     <div class="card">
-        <div class="chip"></div>
-        <div style="font-size: 1.2rem; letter-spacing: 2px; margin-bottom: 20px;">**** **** **** 0902</div>
-        <div style="font-size: 0.8rem; opacity: 0.6;">CARD HOLDER</div>
-        <div style="font-size: 1rem; margin-bottom: 10px;">AHMED-YASIN</div>
-        <div style="font-size: 0.8rem; opacity: 0.6;">BALANCE</div>
-        <div class="gold" style="font-size: 1.2rem; font-weight: bold;">$ 1,250,000</div>
+        <div class="balance-label">TOTAL ASSETS</div>
+        <div class="gold balance-amount">$ <span id="balance">0</span></div>
+        <div style="margin-top: 15px; font-size: 0.7rem; opacity: 0.4;">ACCOUNT: AHMED-YASIN</div>
     </div>
-    <input type="email" placeholder="Email"><br>
-    <input type="password" placeholder="Password"><br>
-    <button onclick="alert('Access Secured')">LOGIN</button>
-    <div style="margin-top: 30px; max-width: 400px; margin-left: auto; margin-right: auto;">
-        <canvas id="myChart"></canvas>
+
+    <div class="input-group">
+        <input type="text" id="reason" placeholder="Label (ex: Vinted Sale)">
+        <input type="number" id="amount" placeholder="Amount ($)">
+        <select id="type">
+            <option value="profit">Profit (+)</option>
+            <option value="expense">Expense (-)</option>
+        </select>
+        <button onclick="addTransaction()">LOG TRANSACTION</button>
     </div>
+
+    <div class="history" id="history-container">
+        <div style="opacity: 0.3; text-align: center;">No activity logged yet</div>
+    </div>
+
+    <div style="max-width: 380px; margin: auto; padding-bottom: 50px;">
+        <canvas id="growthChart"></canvas>
+    </div>
+
     <script>
-        new Chart(document.getElementById('myChart'), {
-            type: 'line',
-            data: { labels: ['Jan', 'Feb', 'Mar', 'Apr'], datasets: [{ label: 'Growth', data: [100, 500, 1000, 1250], borderColor: '#d4af37' }] }
-        });
+        let currentBalance = 0;
+        let chartData = [0];
+        let labels = ['Start'];
+
+        function addTransaction() {
+            const reason = document.getElementById('reason').value;
+            const amount = parseFloat(document.getElementById('amount').value);
+            const type = document.getElementById('type').value;
+
+            if(!reason || isNaN(amount)) {
+                alert("Please enter valid data");
+                return;
+            }
+
+            const change = type === 'profit' ? amount : -amount;
+            currentBalance += change;
+
+            // Update UI
+            document.getElementById('balance').innerText = currentBalance.toLocaleString();
+            
+            // Update History
+            const historyContainer = document.getElementById('history-container');
+            if(chartData.length === 1) historyContainer.innerHTML = "";
+            
+            const item = document.createElement('div');
+            item.className = 'history-item';
+            const color = type === 'profit' ? '#00ff88' : '#ff4444';
+            const symbol = type === 'profit' ? '+' : '-';
+            item.innerHTML = `<span>${reason}</span><span style="color:${color}">${symbol}$${amount.toLocaleString()}</span>`;
+            historyContainer.prepend(item);
+
+            // Update Chart
+            chartData.push(currentBalance);
+            labels.push(new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}));
+            updateChart();
+
+            // Clear inputs
+            document.getElementById('reason').value = "";
+            document.getElementById('amount').value = "";
+        }
+
+        let myChart;
+        function updateChart() {
+            const ctx = document.getElementById('growthChart').getContext('2d');
+            if(myChart) myChart.destroy();
+            myChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Wealth Growth',
+                        data: chartData,
+                        borderColor: '#d4af37',
+                        backgroundColor: 'rgba(212, 175, 55, 0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        borderWidth: 3,
+                        pointRadius: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { grid: { color: '#222' }, ticks: { color: '#555' } },
+                        x: { grid: { display: false }, ticks: { color: '#555' } }
+                    }
+                }
+            });
+        }
+        updateChart();
     </script>
 </body>
 </html>
