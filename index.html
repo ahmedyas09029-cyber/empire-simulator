@@ -3,126 +3,112 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Empire Manager | Secure</title>
+    <title>Empire Terminal | AHMED-YASIN</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        body { background: #0a0a0a; color: white; font-family: sans-serif; text-align: center; padding: 15px; margin: 0; }
+        body { background: #050505; color: white; font-family: 'Courier New', monospace; text-align: center; padding: 0; margin: 0; }
         .gold { color: #d4af37; }
-        .card { background: linear-gradient(135deg, #111, #222); border: 1px solid #d4af37; border-radius: 20px; padding: 25px; margin: 20px auto; max-width: 340px; text-align: left; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
-        .input-group { max-width: 340px; margin: 20px auto; background: #111; padding: 20px; border-radius: 15px; border: 1px solid #222; }
-        input, select { background: #1a1a1a; border: 1px solid #333; color: white; padding: 12px; width: 90%; border-radius: 10px; margin: 8px 0; font-size: 1rem; }
-        button { background: #d4af37; color: black; border: none; padding: 15px; border-radius: 10px; font-weight: bold; width: 100%; cursor: pointer; margin-top: 10px; }
-        .history { max-width: 340px; margin: 20px auto; text-align: left; background: #0f0f0f; border-radius: 10px; padding: 15px; border: 1px solid #1a1a1a; }
-        .history-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #222; font-size: 0.9rem; }
+        .ticker-bar { background: #111; padding: 10px; font-size: 0.75rem; border-bottom: 1px solid #d4af37; display: flex; justify-content: space-around; }
+        .card { background: linear-gradient(145deg, #0f0f0f, #1a1a1a); border: 1px solid #d4af37; border-radius: 15px; padding: 20px; margin: 15px auto; max-width: 350px; text-align: left; box-shadow: 0 0 20px rgba(212, 175, 55, 0.2); }
+        .trade-zone { max-width: 350px; margin: 15px auto; background: #111; padding: 15px; border-radius: 10px; border: 1px solid #222; }
+        input { background: #000; border: 1px solid #333; color: #00ff88; padding: 10px; width: 80%; border-radius: 5px; margin: 5px 0; }
+        .btn-buy { background: #00ff88; color: black; border: none; padding: 12px; border-radius: 5px; font-weight: bold; width: 45%; cursor: pointer; }
+        .btn-sell { background: #ff4444; color: white; border: none; padding: 12px; border-radius: 5px; font-weight: bold; width: 45%; cursor: pointer; }
+        .stat { font-size: 0.8rem; opacity: 0.6; margin-bottom: 5px; }
+        .history { max-width: 350px; margin: auto; text-align: left; font-size: 0.8rem; height: 100px; overflow-y: scroll; border: 1px solid #222; padding: 10px; }
     </style>
 </head>
-<body onload="loadData()">
+<body onload="init()">
 
-    <h1 class="gold" style="margin-top:30px;">EMPIRE MANAGER</h1>
-    
+    <div class="ticker-bar">
+        <span>BTC/USD: <span id="btc-live" style="color:#00ff88">---</span></span>
+        <span>GOLD: <span class="gold">$2,045</span></span>
+    </div>
+
+    <h1 class="gold" style="font-size: 1.5rem; margin-top: 20px;">EMPIRE TERMINAL v3.0</h1>
+
     <div class="card">
-        <div style="font-size: 0.8rem; opacity: 0.6;">TOTAL ASSETS</div>
-        <div class="gold" style="font-size: 2.2rem; font-weight: bold;">$ <span id="balance">0</span></div>
-        <div style="margin-top: 10px; font-size: 0.7rem; opacity: 0.4;">OWNER: AHMED-YASIN</div>
+        <div class="stat">AVAILABLE CAPITAL</div>
+        <div class="gold" style="font-size: 2rem; font-weight: bold;">$ <span id="balance">0</span></div>
+        <div style="margin-top: 10px;">
+            <div class="stat">BTC OWNED: <span id="btc-owned" style="color:white">0</span></div>
+            <div class="stat">POSITION VALUE: <span id="pos-value" style="color:#00ff88">$0</span></div>
+        </div>
     </div>
 
-    <div class="input-group">
-        <input type="text" id="reason" placeholder="Label (ex: Vente iPhone)">
-        <input type="number" id="amount" placeholder="Amount ($)">
-        <select id="type">
-            <option value="profit">Profit (+)</option>
-            <option value="expense">Expense (-)</option>
-        </select>
-        <button onclick="addTransaction()">LOG TRANSACTION</button>
-        <button onclick="resetEmpire()" style="background:#222; color:#555; font-size: 0.7rem; margin-top: 15px;">RESET EMPIRE</button>
+    <div class="trade-zone">
+        <div class="stat" style="text-align:left; margin-left:10px;">MARKET EXECUTION</div>
+        <input type="number" id="trade-amount" placeholder="Amount in USD">
+        <div style="display:flex; justify-content: space-around; margin-top:10px;">
+            <button class="btn-buy" onclick="trade('buy')">BUY BTC</button>
+            <button class="btn-sell" onclick="trade('sell')">SELL BTC</button>
+        </div>
     </div>
 
-    <div class="history" id="history-container"></div>
-    <div style="max-width: 380px; margin: auto; padding-bottom: 40px;">
-        <canvas id="growthChart"></canvas>
+    <div class="history" id="logs">
+        <div style="opacity:0.3">Awaiting market orders...</div>
     </div>
 
     <script>
-        let currentBalance = 0;
-        let transactions = [];
+        let balance = 10000; // Capital de départ fictif pour le test
+        let btcOwned = 0;
+        let currentBtcPrice = 0;
+        let logs = [];
 
-        function addTransaction() {
-            const reason = document.getElementById('reason').value;
-            const amount = parseFloat(document.getElementById('amount').value);
-            const type = document.getElementById('type').value;
-
-            if(!reason || isNaN(amount)) return alert("Entrez des données valides");
-
-            const change = type === 'profit' ? amount : -amount;
-            currentBalance += change;
-
-            const newTx = { reason, amount, type, date: new Date().toLocaleTimeString() };
-            transactions.push(newTx);
-            
-            saveData();
-            renderUI();
-            
-            document.getElementById('reason').value = "";
-            document.getElementById('amount').value = "";
+        async function updateMarket() {
+            try {
+                const res = await fetch('https://api.coindesk.com/v1/bpi/currentprice.json');
+                const data = await res.json();
+                currentBtcPrice = data.bpi.USD.rate_float;
+                document.getElementById('btc-live').innerText = '$' + currentBtcPrice.toLocaleString();
+                updateDisplay();
+            } catch(e) { console.log("Market offline"); }
         }
 
-        function saveData() {
-            localStorage.setItem('empire_balance', currentBalance);
-            localStorage.setItem('empire_txs', JSON.stringify(transactions));
-        }
+        function trade(type) {
+            let usdAmount = parseFloat(document.getElementById('trade-amount').value);
+            if(isNaN(usdAmount) || usdAmount <= 0) return;
 
-        function loadData() {
-            const savedBalance = localStorage.getItem('empire_balance');
-            const savedTxs = localStorage.getItem('empire_txs');
-            if(savedBalance) currentBalance = parseFloat(savedBalance);
-            if(savedTxs) transactions = JSON.parse(savedTxs);
-            renderUI();
-        }
-
-        function renderUI() {
-            document.getElementById('balance').innerText = currentBalance.toLocaleString();
-            const container = document.getElementById('history-container');
-            if(transactions.length === 0) {
-                container.innerHTML = '<div style="opacity:0.3;text-align:center;">No activity logged</div>';
+            if(type === 'buy' && usdAmount <= balance) {
+                balance -= usdAmount;
+                btcOwned += usdAmount / currentBtcPrice;
+                addLog(`BUY BTC: -$${usdAmount}`);
+            } else if(type === 'sell' && btcOwned > 0) {
+                let sellValue = btcOwned * currentBtcPrice;
+                balance += sellValue;
+                btcOwned = 0;
+                addLog(`SELL ALL: +$${sellValue.toFixed(2)}`);
             } else {
-                container.innerHTML = transactions.map(t => `
-                    <div class="history-item">
-                        <span>${t.reason}</span>
-                        <span style="color:${t.type === 'profit' ? '#00ff88' : '#ff4444'}">
-                            ${t.type === 'profit' ? '+' : '-'}$${t.amount.toLocaleString()}
-                        </span>
-                    </div>
-                `).reverse().join('');
+                alert("Insufficient funds or assets");
             }
-            updateChart();
+            save();
+            updateDisplay();
         }
 
-        let myChart;
-        function updateChart() {
-            const ctx = document.getElementById('growthChart').getContext('2d');
-            if(myChart) myChart.destroy();
-            const dataPoints = [0];
-            let tempBalance = 0;
-            transactions.forEach(t => {
-                tempBalance += (t.type === 'profit' ? t.amount : -t.amount);
-                dataPoints.push(tempBalance);
-            });
-
-            myChart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: dataPoints.map((_, i) => i),
-                    datasets: [{ label: 'Growth', data: dataPoints, borderColor: '#d4af37', tension: 0.4 }]
-                },
-                options: { plugins: { legend: { display: false } } }
-            });
+        function addLog(msg) {
+            logs.push(`${new Date().toLocaleTimeString()} | ${msg}`);
+            const logBox = document.getElementById('logs');
+            logBox.innerHTML = logs.map(l => `<div>${l}</div>`).reverse().join('');
         }
 
-        function resetEmpire() {
-            if(confirm("Tout effacer ?")) {
-                localStorage.clear();
-                location.reload();
-            }
+        function updateDisplay() {
+            document.getElementById('balance').innerText = balance.toLocaleString();
+            document.getElementById('btc-owned').innerText = btcOwned.toFixed(6);
+            document.getElementById('pos-value').innerText = '$' + (btcOwned * currentBtcPrice).toLocaleString();
+        }
+
+        function save() {
+            localStorage.setItem('emp_v3_bal', balance);
+            localStorage.setItem('emp_v3_btc', btcOwned);
+        }
+
+        function init() {
+            const b = localStorage.getItem('emp_v3_bal');
+            const c = localStorage.getItem('emp_v3_btc');
+            if(b) balance = parseFloat(b);
+            if(c) btcOwned = parseFloat(c);
+            updateMarket();
+            setInterval(updateMarket, 20000);
         }
     </script>
 </body>
