@@ -1,1 +1,88 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Empire Growth Simulator</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root { --gold: #ffd700; --green: #00ff88; --bg: #0f172a; }
+        body { background: var(--bg); color: white; font-family: 'Inter', sans-serif; text-align: center; padding: 20px; }
+        .card { background: #1e293b; padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); max-width: 600px; margin: auto; border: 1px solid #334155; }
+        h1 { color: var(--gold); text-transform: uppercase; letter-spacing: 2px; }
+        .input-group { margin: 20px 0; text-align: left; }
+        input { width: 100%; padding: 10px; border-radius: 8px; border: none; background: #334155; color: white; margin-top: 5px; }
+        .result { font-size: 2em; color: var(--green); margin: 20px 0; font-weight: bold; }
+        canvas { margin-top: 20px; }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <h1>Wealth Architect v1.0</h1>
+        <p>Ahmed-Yasin's Strategy Lab</p>
+        
+        <div class="input-group">
+            <label>Capital Initial (€/FD)</label>
+            <input type="number" id="capital" value="1000" oninput="calculate()">
+        </div>
+        <div class="input-group">
+            <label>Investissement Mensuel</label>
+            <input type="number" id="monthly" value="500" oninput="calculate()">
+        </div>
+        <div class="input-group">
+            <label>Taux d'intérêt annuel (%)</label>
+            <input type="number" id="rate" value="10" oninput="calculate()">
+        </div>
+
+        <div class="result" id="finalResult">0 €</div>
+        <canvas id="myChart"></canvas>
+    </div>
+
+    <script>
+        let myChart;
+        function calculate() {
+            const cap = parseFloat(document.getElementById('capital').value);
+            const mon = parseFloat(document.getElementById('monthly').value);
+            const rate = parseFloat(document.getElementById('rate').value) / 100 / 12;
+            const years = 20;
+            let total = cap;
+            let data = [cap];
+            let labels = [0];
+
+            for (let i = 1; i <= years * 12; i++) {
+                total = total * (1 + rate) + mon;
+                if (i % 12 === 0) {
+                    data.push(total);
+                    labels.push(i / 12);
+                }
+            }
+
+            document.getElementById('finalResult').innerText = Math.round(total).toLocaleString() + " €";
+            updateChart(labels, data);
+        }
+
+        function updateChart(labels, data) {
+            const ctx = document.getElementById('myChart').getContext('2d');
+            if (myChart) myChart.destroy();
+            myChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Évolution de ta fortune',
+                        data: data,
+                        borderColor: '#00ff88',
+                        tension: 0.4,
+                        fill: true,
+                        backgroundColor: 'rgba(0, 255, 136, 0.1)'
+                    }]
+                },
+                options: { scales: { y: { ticks: { color: 'white' } }, x: { ticks: { color: 'white' } } } }
+            });
+        }
+        window.onload = calculate;
+    </script>
+</body>
+</html>
 
