@@ -3,133 +3,90 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AHMED-YASIN CORPS | SOLUTIONS</title>
+    <title>AY CORPS | LEADERBOARD</title>
     <style>
-        :root { 
-            --bg: #010409; 
-            --accent-blue: #0070f3; 
-            --accent-green: #00dfd8; 
-            --card: #0d1117;
-            --text-main: #ffffff;
-            --text-dim: #8899a6;
-        }
+        :root { --bg: #010409; --accent: #0070f3; --green: #00dfd8; --card: #0d1117; }
+        body { background: var(--bg); color: white; font-family: 'Inter', sans-serif; margin: 0; text-align: center; }
+        nav { padding: 15px; border-bottom: 1px solid #21262d; background: rgba(1,4,9,0.9); }
         
-        body { 
-            background: var(--bg); 
-            color: var(--text-main); 
-            font-family: 'Inter', sans-serif; 
-            margin: 0; 
-            background-image: radial-gradient(circle at 50% -20%, #002d5a 0%, #010409 60%);
-            min-height: 100vh;
+        /* Style du Jeu */
+        .game-container { padding: 40px 20px; max-width: 400px; margin: auto; }
+        .score-box { background: var(--card); border: 1px solid #30363d; padding: 25px; border-radius: 20px; margin-bottom: 20px; }
+        .score-num { font-size: 2.8rem; font-weight: 800; color: var(--green); }
+        
+        .click-btn { 
+            width: 120px; height: 120px; border-radius: 50%; border: 4px solid var(--accent);
+            background: #111; color: white; font-size: 2rem; cursor: pointer; transition: 0.1s;
         }
+        .click-btn:active { transform: scale(0.9); box-shadow: 0 0 20px var(--accent); }
 
-        /* Barre de Navigation */
-        nav {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 20px 5%;
-            border-bottom: 1px solid #21262d;
-            background: rgba(1, 4, 9, 0.8);
-            backdrop-filter: blur(10px);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-
-        .nav-logo { font-weight: 800; letter-spacing: 1px; color: var(--accent-blue); }
-        .nav-links { display: flex; gap: 20px; font-size: 0.8rem; font-weight: 600; color: var(--text-dim); }
-
-        .hero { text-align: center; padding: 80px 20px; }
-
-        .status-pill {
-            display: inline-flex;
-            align-items: center;
-            background: rgba(0, 112, 243, 0.1);
-            color: var(--accent-blue);
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-size: 0.7rem;
-            font-weight: bold;
-            margin-bottom: 20px;
-        }
-
-        h1 {
-            font-size: 2.5rem;
-            background: linear-gradient(to right, var(--accent-blue), var(--accent-green));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin: 0;
-        }
-
-        /* Section Services */
-        .services-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            padding: 40px 5%;
-        }
-
-        .service-card {
-            background: var(--card);
-            border: 1px solid #30363d;
-            padding: 30px;
-            border-radius: 12px;
-            transition: 0.3s;
-        }
-
-        .service-card:hover { border-color: var(--accent-blue); transform: translateY(-5px); }
-        .service-icon { color: var(--accent-green); font-size: 1.5rem; margin-bottom: 15px; }
-        .service-card h3 { margin: 0 0 10px 0; font-size: 1.1rem; }
-        .service-card p { color: var(--text-dim); font-size: 0.85rem; line-height: 1.5; }
-
-        .footer {
-            text-align: center;
-            padding: 40px;
-            font-size: 0.7rem;
-            color: #484f58;
-            border-top: 1px solid #21262d;
-        }
+        /* Style du Classement */
+        .leaderboard { background: #080a0c; border: 1px solid #222; border-radius: 12px; margin-top: 30px; overflow: hidden; }
+        .lb-header { background: #111; padding: 10px; font-size: 0.7rem; letter-spacing: 2px; color: var(--accent); font-weight: bold; }
+        .lb-row { display: flex; justify-content: space-between; padding: 12px 20px; border-bottom: 1px solid #111; font-size: 0.85rem; }
+        .lb-row:last-child { border: none; }
+        .rank-1 { color: var(--green); font-weight: bold; }
     </style>
 </head>
-<body>
+<body onload="init()">
 
-    <nav>
-        <div class="nav-logo">AY CORPS</div>
-        <div class="nav-links">
-            <span>ACCUEIL</span>
-            <span>SERVICES</span>
-            <span style="color:white">PROJETS</span>
+    <nav><strong>AHMED-YASIN CORPS</strong></nav>
+
+    <div class="game-container">
+        <div class="score-box">
+            <div class="score-num" id="pts">0</div>
+            <div style="font-size:0.7rem; color:var(--accent); letter-spacing:1px">POINTS D'EMPIRE</div>
+            <br>
+            <button class="click-btn" onclick="hit()">⚡</button>
         </div>
-    </nav>
 
-    <div class="hero">
-        <div class="status-pill">SYSTÈME OPÉRATIONNEL</div>
-        <h1>AHMED-YASIN CORPS</h1>
-        <p style="color:var(--text-dim)">L'excellence numérique au service de votre vision.</p>
+        <div class="leaderboard">
+            <div class="lb-header">CLASSEMENT MONDIAL (SIMULÉ)</div>
+            <div id="lb-content">
+                </div>
+        </div>
+        
+        <button onclick="resetScore()" style="margin-top:20px; background:none; border:none; color:#333; font-size:0.6rem; cursor:pointer;">RÉINITIALISER MON SCORE</button>
     </div>
 
-    <div class="services-grid">
-        <div class="service-card">
-            <div class="service-icon">✦</div>
-            <h3>Architecture Web</h3>
-            <p>Conception d'interfaces haute performance avec les dernières technologies du marché.</p>
-        </div>
-        <div class="service-card">
-            <div class="service-icon">⚡</div>
-            <h3>Optimisation</h3>
-            <p>Amélioration des systèmes existants pour une rapidité et une sécurité maximale.</p>
-        </div>
-        <div class="service-card">
-            <div class="service-icon">📊</div>
-            <h3>Gestion d'Actifs</h3>
-            <p>Outils personnalisés pour le suivi de performance et la croissance financière.</p>
-        </div>
-    </div>
+    <script>
+        let score = 0;
+        let fakePlayers = [
+            {name: "Elon M.", score: 500000},
+            {name: "Gojo S.", score: 250000},
+            {name: "Traders_Pro", score: 100000}
+        ];
 
-    <div class="footer">
-        © 2026 AHMED-YASIN CORPS | INFRASTRUCTURE SÉCURISÉE VÉRIFIÉE
-    </div>
+        function hit() {
+            score += 10;
+            updateUI();
+            save();
+        }
 
+        function updateUI() {
+            document.getElementById('pts').innerText = score;
+            
+            // On ajoute toi au classement
+            let allPlayers = [...fakePlayers, {name: "MOI (Ahmed-Yasin)", score: score}];
+            allPlayers.sort((a, b) => b.score - a.score);
+
+            const content = document.getElementById('lb-content');
+            content.innerHTML = allPlayers.slice(0, 5).map((p, i) => `
+                <div class="lb-row ${i === 0 ? 'rank-1' : ''}">
+                    <span>${i + 1}. ${p.name}</span>
+                    <span>${p.score.toLocaleString()}</span>
+                </div>
+            `).join('');
+        }
+
+        function save() { localStorage.setItem('ay_score', score); }
+        function resetScore() { score = 0; save(); updateUI(); }
+
+        function init() {
+            const saved = localStorage.getItem('ay_score');
+            if(saved) score = parseInt(saved);
+            updateUI();
+        }
+    </script>
 </body>
 </html>
