@@ -3,130 +3,138 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Empire Vision | AHMED-YASIN</title>
+    <title>AHMED-YASIN | SYSTEMS</title>
     <style>
-        :root { --gold: #d4af37; --green: #00ff88; --red: #ff4444; --bg: #0a0a0a; }
-        body { background: var(--bg); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 15px; }
-        .container { max-width: 400px; margin: auto; }
-        .card { background: #111; border: 1px solid var(--gold); border-radius: 15px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
-        .balance { font-size: 2.2rem; font-weight: bold; color: var(--gold); }
-        .section-title { font-size: 0.75rem; text-transform: uppercase; color: var(--gold); letter-spacing: 1.5px; margin-bottom: 12px; display: block; font-weight: bold; }
+        :root { 
+            --bg: #010409; 
+            --accent-blue: #0070f3; 
+            --accent-green: #00dfd8; 
+            --text-main: #ffffff;
+            --text-dim: #8899a6;
+        }
         
-        /* Barre de progression */
-        .goal-container { margin-top: 15px; background: #222; border-radius: 10px; height: 20px; overflow: hidden; border: 1px solid #333; }
-        .goal-bar { background: linear-gradient(90deg, var(--gold), #f3cf65); height: 100%; width: 0%; transition: width 0.5s ease; }
+        body { 
+            background: var(--bg); 
+            color: var(--text-main); 
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; 
+            margin: 0; 
+            display: flex; 
+            flex-direction: column;
+            align-items: center; 
+            justify-content: center; 
+            height: 100vh;
+            background-image: radial-gradient(circle at 50% -20%, #002d5a 0%, #010409 60%);
+        }
         
-        .input-group { background: #161616; padding: 15px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #222; }
-        input { background: #000; border: 1px solid #333; color: white; padding: 12px; width: 90%; border-radius: 8px; margin-bottom: 10px; outline: none; }
-        button { background: var(--gold); color: black; border: none; padding: 15px; border-radius: 8px; width: 100%; font-weight: bold; cursor: pointer; transition: 0.2s; }
-        button:active { transform: scale(0.98); }
-        
-        .history { font-size: 0.85rem; max-height: 180px; overflow-y: auto; }
-        .log-item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #222; }
+        .container { text-align: center; padding: 20px; }
+
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            background: rgba(0, 112, 243, 0.1);
+            border: 1px solid rgba(0, 112, 243, 0.3);
+            color: var(--accent-blue);
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            letter-spacing: 1px;
+            margin-bottom: 30px;
+        }
+
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            background: var(--accent-green);
+            border-radius: 50%;
+            margin-right: 8px;
+            box-shadow: 0 0 10px var(--accent-green);
+        }
+
+        h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            margin: 0;
+            background: linear-gradient(to right, var(--accent-blue), var(--accent-green));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -2px;
+        }
+
+        p {
+            color: var(--text-dim);
+            font-size: 1.1rem;
+            max-width: 400px;
+            line-height: 1.6;
+            margin: 20px auto;
+        }
+
+        .action-area {
+            margin-top: 40px;
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .btn-main {
+            background: var(--text-main);
+            color: var(--bg);
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            text-decoration: none;
+            transition: 0.3s;
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: var(--text-main);
+            border: 1px solid #333;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .btn-outline:hover {
+            border-color: var(--accent-blue);
+            background: rgba(0, 112, 243, 0.05);
+        }
+
+        .footer {
+            position: absolute;
+            bottom: 40px;
+            font-size: 0.7rem;
+            color: #333;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
     </style>
 </head>
-<body onload="init()">
+<body>
 
-<div class="container">
-    <div style="text-align:center; margin-bottom: 25px;">
-        <h2 style="color:var(--gold); margin:0; letter-spacing: 2px;">EMPIRE VISION</h2>
-        <span style="font-size:0.7rem; opacity:0.5; text-transform: uppercase;">Stratégie Réelle par AHMED-YASIN</span>
-    </div>
-
-    <div class="card">
-        <span class="section-title">Objectif : <span id="goal-name-display">Nouveau PC</span></span>
-        <div style="display:flex; justify-content: space-between; font-size: 0.9rem; margin-bottom: 5px;">
-            <span id="current-total">0.00 €</span>
-            <span style="opacity:0.6">Cible: <span id="goal-price-display">1200</span> €</span>
+    <div class="container">
+        <div class="status-pill">
+            <div class="status-dot"></div>
+            SYSTÈME OPÉRATIONNEL
         </div>
-        <div class="goal-container">
-            <div class="goal-bar" id="goal-progress"></div>
-        </div>
-        <div id="percentage" style="text-align:right; font-size: 0.7rem; margin-top: 5px; color: var(--gold);">0%</div>
-    </div>
-
-    <div class="input-group">
-        <span class="section-title">Configurer l'Objectif</span>
-        <input type="text" id="goal-name" placeholder="Nom de l'objectif (ex: PS5)">
-        <input type="number" id="goal-price" placeholder="Prix cible (€)">
-        <button onclick="updateGoal()">METTRE À JOUR L'OBJECTIF</button>
-    </div>
-
-    <div class="input-group">
-        <span class="section-title">Ajouter du Cash Réel</span>
-        <input type="number" id="amount" placeholder="Montant (€)">
-        <button style="background: var(--green);" onclick="addCash()">+ AJOUTER AUX ÉCONOMIES</button>
-    </div>
-
-    <div class="card">
-        <span class="section-title">Journal des Flux</span>
-        <div class="history" id="history-list"></div>
-    </div>
-</div>
-
-<script>
-    let currentCash = 0;
-    let goalPrice = 1200;
-    let goalName = "Nouveau PC";
-    let logs = [];
-
-    function updateGoal() {
-        const name = document.getElementById('goal-name').value;
-        const price = parseFloat(document.getElementById('goal-price').value);
-        if(name) goalName = name;
-        if(!isNaN(price) && price > 0) goalPrice = price;
-        save();
-        render();
-    }
-
-    function addCash() {
-        const amount = parseFloat(document.getElementById('amount').value);
-        if(isNaN(amount) || amount <= 0) return;
-        currentCash += amount;
-        logs.push({ amount, date: new Date().toLocaleDateString() });
-        save();
-        render();
-        document.getElementById('amount').value = '';
-    }
-
-    function render() {
-        document.getElementById('goal-name-display').innerText = goalName;
-        document.getElementById('goal-price-display').innerText = goalPrice.toLocaleString();
-        document.getElementById('current-total').innerText = currentCash.toFixed(2) + ' €';
         
-        let pct = (currentCash / goalPrice) * 100;
-        if(pct > 100) pct = 100;
-        document.getElementById('goal-progress').style.width = pct + '%';
-        document.getElementById('percentage').innerText = Math.floor(pct) + '% COMPLÉTÉ';
+        <h1>AHMED-YASIN CORPS</h1>
+        
+        <p>Architectures numériques et gestion d'actifs de nouvelle génération. <br>Le futur se construit ici.</p>
 
-        document.getElementById('history-list').innerHTML = logs.map(l => `
-            <div class="log-item">
-                <span>Économie <br><small style="opacity:0.5">${l.date}</small></span>
-                <span style="color:var(--green)">+${l.amount.toFixed(2)} €</span>
-            </div>
-        `).reverse().join('');
-    }
+        <div class="action-area">
+            <button class="btn-main" onclick="alert('Initialisation du protocole...')">DÉPLOYER</button>
+            <button class="btn-outline" onclick="location.reload()">ACTUALISER</button>
+        </div>
+    </div>
 
-    function save() {
-        localStorage.setItem('vision_cash', currentCash);
-        localStorage.setItem('vision_goal_price', goalPrice);
-        localStorage.setItem('vision_goal_name', goalName);
-        localStorage.setItem('vision_logs', JSON.stringify(logs));
-    }
-
-    function init() {
-        const sCash = localStorage.getItem('vision_cash');
-        const sPrice = localStorage.getItem('vision_goal_price');
-        const sName = localStorage.getItem('vision_goal_name');
-        const sLogs = localStorage.getItem('vision_logs');
-        if(sCash) currentCash = parseFloat(sCash);
-        if(sPrice) goalPrice = parseFloat(sPrice);
-        if(sName) goalName = sName;
-        if(sLogs) logs = JSON.parse(sLogs);
-        render();
-    }
-</script>
+    <div class="footer">
+        INFRASTRUCTURE SÉCURISÉE | © 2026
+    </div>
 
 </body>
 </html>
-
