@@ -3,12 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AHMED-YASIN | SYSTEMS</title>
+    <title>AHMED-YASIN CORPS | SOLUTIONS</title>
     <style>
         :root { 
             --bg: #010409; 
             --accent-blue: #0070f3; 
             --accent-green: #00dfd8; 
+            --card: #0d1117;
             --text-main: #ffffff;
             --text-dim: #8899a6;
         }
@@ -16,124 +17,118 @@
         body { 
             background: var(--bg); 
             color: var(--text-main); 
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; 
+            font-family: 'Inter', sans-serif; 
             margin: 0; 
-            display: flex; 
-            flex-direction: column;
-            align-items: center; 
-            justify-content: center; 
-            height: 100vh;
             background-image: radial-gradient(circle at 50% -20%, #002d5a 0%, #010409 60%);
+            min-height: 100vh;
         }
-        
-        .container { text-align: center; padding: 20px; }
+
+        /* Barre de Navigation */
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 5%;
+            border-bottom: 1px solid #21262d;
+            background: rgba(1, 4, 9, 0.8);
+            backdrop-filter: blur(10px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-logo { font-weight: 800; letter-spacing: 1px; color: var(--accent-blue); }
+        .nav-links { display: flex; gap: 20px; font-size: 0.8rem; font-weight: 600; color: var(--text-dim); }
+
+        .hero { text-align: center; padding: 80px 20px; }
 
         .status-pill {
             display: inline-flex;
             align-items: center;
             background: rgba(0, 112, 243, 0.1);
-            border: 1px solid rgba(0, 112, 243, 0.3);
             color: var(--accent-blue);
             padding: 5px 15px;
             border-radius: 20px;
             font-size: 0.7rem;
             font-weight: bold;
-            letter-spacing: 1px;
-            margin-bottom: 30px;
-        }
-
-        .status-dot {
-            width: 6px;
-            height: 6px;
-            background: var(--accent-green);
-            border-radius: 50%;
-            margin-right: 8px;
-            box-shadow: 0 0 10px var(--accent-green);
+            margin-bottom: 20px;
         }
 
         h1 {
-            font-size: 3rem;
-            font-weight: 800;
-            margin: 0;
+            font-size: 2.5rem;
             background: linear-gradient(to right, var(--accent-blue), var(--accent-green));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            letter-spacing: -2px;
+            margin: 0;
         }
 
-        p {
-            color: var(--text-dim);
-            font-size: 1.1rem;
-            max-width: 400px;
-            line-height: 1.6;
-            margin: 20px auto;
+        /* Section Services */
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            padding: 40px 5%;
         }
 
-        .action-area {
-            margin-top: 40px;
-            display: flex;
-            gap: 15px;
-            justify-content: center;
-        }
-
-        .btn-main {
-            background: var(--text-main);
-            color: var(--bg);
-            border: none;
-            padding: 12px 30px;
-            border-radius: 8px;
-            font-weight: 700;
-            cursor: pointer;
-            text-decoration: none;
+        .service-card {
+            background: var(--card);
+            border: 1px solid #30363d;
+            padding: 30px;
+            border-radius: 12px;
             transition: 0.3s;
         }
 
-        .btn-outline {
-            background: transparent;
-            color: var(--text-main);
-            border: 1px solid #333;
-            padding: 12px 30px;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: 0.3s;
-        }
-
-        .btn-outline:hover {
-            border-color: var(--accent-blue);
-            background: rgba(0, 112, 243, 0.05);
-        }
+        .service-card:hover { border-color: var(--accent-blue); transform: translateY(-5px); }
+        .service-icon { color: var(--accent-green); font-size: 1.5rem; margin-bottom: 15px; }
+        .service-card h3 { margin: 0 0 10px 0; font-size: 1.1rem; }
+        .service-card p { color: var(--text-dim); font-size: 0.85rem; line-height: 1.5; }
 
         .footer {
-            position: absolute;
-            bottom: 40px;
+            text-align: center;
+            padding: 40px;
             font-size: 0.7rem;
-            color: #333;
-            text-transform: uppercase;
-            letter-spacing: 2px;
+            color: #484f58;
+            border-top: 1px solid #21262d;
         }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <div class="status-pill">
-            <div class="status-dot"></div>
-            SYSTÈME OPÉRATIONNEL
+    <nav>
+        <div class="nav-logo">AY CORPS</div>
+        <div class="nav-links">
+            <span>ACCUEIL</span>
+            <span>SERVICES</span>
+            <span style="color:white">PROJETS</span>
         </div>
-        
-        <h1>AHMED-YASIN CORPS</h1>
-        
-        <p>Architectures numériques et gestion d'actifs de nouvelle génération. <br>Le futur se construit ici.</p>
+    </nav>
 
-        <div class="action-area">
-            <button class="btn-main" onclick="alert('Initialisation du protocole...')">DÉPLOYER</button>
-            <button class="btn-outline" onclick="location.reload()">ACTUALISER</button>
+    <div class="hero">
+        <div class="status-pill">SYSTÈME OPÉRATIONNEL</div>
+        <h1>AHMED-YASIN CORPS</h1>
+        <p style="color:var(--text-dim)">L'excellence numérique au service de votre vision.</p>
+    </div>
+
+    <div class="services-grid">
+        <div class="service-card">
+            <div class="service-icon">✦</div>
+            <h3>Architecture Web</h3>
+            <p>Conception d'interfaces haute performance avec les dernières technologies du marché.</p>
+        </div>
+        <div class="service-card">
+            <div class="service-icon">⚡</div>
+            <h3>Optimisation</h3>
+            <p>Amélioration des systèmes existants pour une rapidité et une sécurité maximale.</p>
+        </div>
+        <div class="service-card">
+            <div class="service-icon">📊</div>
+            <h3>Gestion d'Actifs</h3>
+            <p>Outils personnalisés pour le suivi de performance et la croissance financière.</p>
         </div>
     </div>
 
     <div class="footer">
-        INFRASTRUCTURE SÉCURISÉE | © 2026
+        © 2026 AHMED-YASIN CORPS | INFRASTRUCTURE SÉCURISÉE VÉRIFIÉE
     </div>
 
 </body>
