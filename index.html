@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>KORELI | EMPIRE DÉPLOYÉ</title>
+    <title>KORELI | EMPIRE CLOUD</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root { --accent: #a855f7; --bg: #050505; --card: #121212; --text: #f0f0f0; --coin: #FFD700; --founder: linear-gradient(45deg, #FFD700, #a855f7); }
@@ -12,11 +12,9 @@
         .logo { font-weight: 900; font-size: 1.2rem; background: linear-gradient(90deg, #fff, #a855f7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         .content { flex: 1; overflow-y: auto; padding: 15px; padding-bottom: 100px; }
         .card { background: var(--card); padding: 20px; border-radius: 20px; border: 1px solid #222; margin-bottom: 15px; text-align: center; }
-        .auth-btn { width: 100%; padding: 15px; border-radius: 12px; border: none; font-weight: bold; margin-bottom: 12px; cursor: pointer; font-size: 1rem; }
-        .google { background: white; color: black; }
-        .apple { background: #222; color: white; border: 1px solid #444; }
+        input { width: 100%; background: #000; border: 1px solid #333; color: white; padding: 15px; border-radius: 12px; margin: 10px 0; font-size: 1rem; box-sizing: border-box; }
+        .btn-auth { width: 100%; padding: 15px; border-radius: 12px; border: none; font-weight: bold; cursor: pointer; background: white; color: black; font-size: 1rem; }
         .btn-ceo { background: var(--founder); color: black; border: none; padding: 12px; border-radius: 12px; font-weight: bold; width: 100%; cursor: pointer; margin-top: 10px; }
-        input { width: 100%; background: #000; border: 1px solid #333; color: white; padding: 12px; border-radius: 12px; margin: 8px 0; box-sizing: border-box; }
     </style>
 </head>
 <body onload="init()">
@@ -26,38 +24,39 @@
         <div style="color:var(--coin); font-weight:bold;">💎 <span id="top-coins">0</span></div>
     </div>
 
-    <div id="auth-screen" style="display:none; padding:60px 20px; text-align:center;">
-        <h1 style="font-size: 3.5rem; margin:0;">👑</h1>
-        <h2 style="margin-bottom:30px;">KORELI CLOUD</h2>
-        <button class="auth-btn google" onclick="login('google')">Continuer avec Google</button>
-        <button class="auth-btn apple" onclick="login('apple')">Continuer avec Apple</button>
+    <div id="auth-screen" style="display:none; padding:50px 20px; text-align:center;">
+        <h1 style="font-size: 3rem; margin:0;">👑</h1>
+        <h2>Accès Citoyen</h2>
+        <p style="color:#888; font-size:0.9rem; margin-bottom:20px;">Entrez votre email. Un lien de connexion unique sera envoyé dans votre boîte mail.</p>
+        <input type="email" id="email-input" placeholder="votre@email.com">
+        <button class="btn-auth" onclick="loginWithEmail()">Envoyer mon Lien Magique</button>
     </div>
 
     <div id="main-app" style="display:none;" class="content">
         <div class="card">
-            <img id="user-avatar" src="" style="width:80px; height:80px; border-radius:50%; border:2px solid var(--accent); display:none; margin: 0 auto 10px;">
             <h2 id="user-name">...</h2>
             <div id="user-badge"></div>
-            <p style="font-size: 1.3rem;">Solde : <span id="user-coins" style="color:var(--coin); font-weight:bold;">0</span> 💎</p>
+            <p style="font-size: 1.3rem; margin-top:15px;">K-Coins : <span id="user-coins" style="color:var(--coin); font-weight:bold;">0</span> 💎</p>
         </div>
 
         <div id="ceo-panel" style="display:none;" class="card">
-            <h3 style="color:var(--coin);">🏦 BANQUE DU FOUNDER</h3>
-            <input type="text" id="target-user" placeholder="Nom du citoyen">
-            <input type="number" id="gift-amount" placeholder="Montant 💎">
-            <button class="btn-ceo" onclick="giftCoins()">DISTRIBUER LES FONDS</button>
+            <h3 style="color:var(--coin);">🏦 TRÉSORERIE DU FOUNDER</h3>
+            <input type="text" id="target-user" placeholder="Pseudo du destinataire">
+            <input type="number" id="gift-amount" placeholder="Montant en 💎">
+            <button class="btn-ceo" onclick="giftCoins()">GÉNÉRER LES K-COINS</button>
         </div>
 
         <div class="card" style="border: 1px dashed #444;">
-            <p style="color:#44ff44; font-size:0.8rem;">CLOUD CONNECTÉ : ebykrodcycqcpcfuqpzi ✅</p>
+            <p style="color:#44ff44; font-size:0.8rem;">PROJET CLOUD : ebykrodcycqcpcfuqpzi ✅</p>
             <button onclick="logout()" style="background:none; border:1px solid #ff4444; color:#ff4444; padding:8px 15px; border-radius:8px; margin-top:10px; cursor:pointer;">Déconnexion</button>
         </div>
     </div>
 
     <script>
-        const PROJECT_URL = "https://ebykrodcycqcpcfuqpzi.supabase.co";
-        const PUBLIC_KEY = "sb_publishable_j_DNfP9D_2K3uAzbb6-Giw_cWJJfR8_";
-        const REDIRECT_URL = "https://empire-simulator-ahmedyas09029-cybers-projects.vercel.app/";
+        // CONFIGURATION SUPABASE (PROJET ID : ebykrodcycqcpcfuqpzi)
+        const PROJECT_URL = "https://ebykrodcycqcpcfuqpzi.supabase.co"; //
+        const PUBLIC_KEY = "sb_publishable_j_DNfP9D_2K3uAzbb6-Giw_cWJJfR8_"; //
+        const REDIRECT_URL = "https://empire-simulator-ahmedyas09029-cybers-projects.vercel.app/"; //
         
         const sb = supabase.createClient(PROJECT_URL, PUBLIC_KEY);
 
@@ -67,11 +66,17 @@
             else { document.getElementById('auth-screen').style.display = 'block'; }
         }
 
-        async function login(provider) { 
-            await sb.auth.signInWithOAuth({ 
-                provider: provider,
-                options: { redirectTo: REDIRECT_URL }
-            }); 
+        async function loginWithEmail() {
+            const email = document.getElementById('email-input').value;
+            if(!email) return alert("Veuillez entrer une adresse email valide.");
+            
+            const { error } = await sb.auth.signInWithOtp({
+                email: email,
+                options: { emailRedirectTo: REDIRECT_URL }
+            });
+            
+            if (error) alert("Erreur d'envoi : " + error.message);
+            else alert("Lien envoyé ! Consultez votre boîte mail pour entrer dans l'empire.");
         }
 
         async function logout() { await sb.auth.signOut(); location.reload(); }
@@ -80,15 +85,10 @@
             document.getElementById('auth-screen').style.display = 'none';
             document.getElementById('main-app').style.display = 'block';
 
+            // RECONNAISSANCE DU PROPRIÉTAIRE
             const isCEO = (user.email === "ahmedyas09029@gmail.com");
 
-            document.getElementById('user-name').innerText = user.user_metadata.full_name || user.email;
-            if(user.user_metadata.avatar_url) {
-                const img = document.getElementById('user-avatar');
-                img.src = user.user_metadata.avatar_url;
-                img.style.display = "block";
-            }
-
+            document.getElementById('user-name').innerText = user.email;
             document.getElementById('top-coins').innerText = isCEO ? "∞" : "0";
             document.getElementById('user-coins').innerText = isCEO ? "ILLIMITÉ" : "0";
 
@@ -99,12 +99,12 @@
         }
 
         function giftCoins() {
-            const user = document.getElementById('target-user').value;
+            const target = document.getElementById('target-user').value;
             const amt = document.getElementById('gift-amount').value;
-            if(user && amt) { alert(`SUCCESS: ${amt} 💎 envoyés à ${user}.`); }
+            if(target && amt) { 
+                alert(`ORDRE DU FOUNDER : ${amt} 💎 ont été transférés à ${target}.`); 
+            }
         }
     </script>
 </body>
 </html>
-
-                
