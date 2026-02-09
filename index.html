@@ -3,41 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>KORELI | FINANCIAL EMPIRE</title>
+    <title>KORELI | TOTAL ACCESS</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root { 
-            --accent: #a855f7; 
-            --bg: #050505; 
-            --card: #121212; 
-            --text: #f0f0f0; 
-            --coin: #FFD700; 
-            --euro: #00ff88;
-            --founder: linear-gradient(135deg, #FFD700, #ff8800);
+            --accent: #a855f7; --bg: #050505; --card: #121212; --text: #f0f0f0; 
+            --coin: #FFD700; --euro: #00ff88; --founder: linear-gradient(135deg, #FFD700, #ff8800); 
         }
-        
         body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; margin: 0; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
-        .header { padding: 20px; display: flex; justify-content: space-between; align-items: center; background: rgba(5,5,5,0.8); backdrop-filter: blur(10px); border-bottom: 1px solid #222; position: sticky; top: 0; z-index: 100; }
+        .header { padding: 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #222; background: rgba(5,5,5,0.8); backdrop-filter: blur(10px); }
         .logo { font-weight: 900; font-size: 1.4rem; background: linear-gradient(90deg, #fff, var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        
         .content { flex: 1; overflow-y: auto; padding: 20px; padding-bottom: 100px; }
         .card { background: var(--card); padding: 25px; border-radius: 24px; border: 1px solid #222; margin-bottom: 20px; text-align: center; }
-
-        /* STATS */
-        .balance-val { font-size: 2.2rem; font-weight: 800; color: var(--coin); margin: 5px 0; }
-        .euro-val { font-size: 1.1rem; color: var(--euro); font-weight: 600; }
-        .badge-founder { display: inline-block; padding: 6px 15px; border-radius: 50px; background: var(--founder); color: black; font-weight: 900; font-size: 0.7rem; margin-top: 10px; }
-
-        /* INPUTS & BTNS */
-        input { width: 100%; background: #000; border: 1px solid #333; color: white; padding: 15px; border-radius: 16px; margin: 8px 0; box-sizing: border-box; }
-        .btn-main { width: 100%; padding: 16px; border-radius: 16px; border: none; font-weight: 800; cursor: pointer; font-size: 1rem; }
+        input { width: 100%; background: #000; border: 1px solid #333; color: white; padding: 15px; border-radius: 16px; margin: 8px 0; box-sizing: border-box; font-size: 1rem; }
+        .btn-main { width: 100%; padding: 16px; border-radius: 16px; border: none; font-weight: 800; cursor: pointer; font-size: 1rem; transition: 0.3s; }
         .btn-auth { background: white; color: black; }
         .btn-gift { background: var(--founder); color: black; margin-top: 10px; }
-
-        /* NAV */
         .nav { position: fixed; bottom: 0; width: 100%; background: #0a0a0a; display: flex; justify-content: space-around; padding: 15px 0; border-top: 1px solid #222; }
-        .nav-btn { color: #555; font-size: 0.75rem; font-weight: 600; cursor: pointer; }
-        .nav-btn.active { color: var(--accent); }
+        .status-dot { height: 8px; width: 8px; background-color: #00ff88; border-radius: 50%; display: inline-block; margin-right: 5px; }
     </style>
 </head>
 <body onload="init()">
@@ -47,56 +30,46 @@
         <div id="euro-total" style="color:var(--euro); font-weight:bold;">0.00 €</div>
     </div>
 
-    <div id="auth-screen" style="display:none; padding:80px 30px; text-align:center;">
-        <div style="font-size: 4rem;">🗝️</div>
-        <h1>Empire Cloud</h1>
-        <p style="color:#666;">Entrez votre email pour recevoir votre lien magique.</p>
-        <input type="email" id="email-input" placeholder="votre@email.com">
-        <button class="btn-main btn-auth" id="auth-btn" onclick="loginWithEmail()">RECEVOIR LE LIEN</button>
-        <p id="rate-limit-msg" style="color:red; font-size:0.8rem; display:none; margin-top:10px;">Trop de tentatives. Attendez 1 minute.</p>
+    <div id="auth-screen" style="display:none; padding:60px 30px; text-align:center;">
+        <div style="font-size: 4rem;">🔑</div>
+        <h1>Empire Koreli</h1>
+        <p style="color:#666; margin-bottom:30px;">Accès direct par identifiants.</p>
+        
+        <input type="email" id="email-input" placeholder="Email">
+        <input type="password" id="password-input" placeholder="Mot de passe">
+        
+        <button class="btn-main btn-auth" onclick="handleAuth('login')" style="margin-bottom:12px;">SE CONNECTER</button>
+        <button class="btn-main" onclick="handleAuth('signup')" style="background:transparent; color:var(--accent); border:1px solid var(--accent);">CRÉER UN COMPTE</button>
+        <p style="font-size: 0.7rem; color: #444; margin-top: 15px;">Note : Pas besoin de vérification mail.</p>
     </div>
 
     <div id="main-app" style="display:none;" class="content">
-        
-        <div id="tab-wallet">
-            <div class="card">
-                <div style="font-size:0.8rem; color:#888;">SOLDE ACTUEL</div>
-                <div class="balance-val" id="user-coins">0</div>
-                <div class="euro-val" id="user-euros">0.00 €</div>
-                <div id="user-badge"></div>
-            </div>
-
-            <div id="ceo-panel" style="display:none;" class="card">
-                <h3 style="color:var(--coin);">🏦 BANQUE CENTRALE</h3>
-                <input type="text" id="target" placeholder="ID Citoyen">
-                <input type="number" id="amt" placeholder="Montant 💎">
-                <button class="btn-main btn-gift" onclick="processGift()">GÉNÉRER K-COINS</button>
-            </div>
+        <div class="card">
+            <div id="user-badge"></div>
+            <div id="user-email" style="font-size:0.8rem; color:#888; margin:10px 0;"></div>
+            <div style="font-size:2.5rem; font-weight:800; color:var(--coin);" id="user-coins">0</div>
+            <div style="color:var(--euro); font-weight:600;" id="user-euros">0.00 €</div>
         </div>
 
-        <div id="tab-shop" style="display:none;">
-            <div class="card">
-                <h3>🛒 MARKETPLACE</h3>
-                <p style="color:#666;">Boutique en cours de synchronisation...</p>
-            </div>
+        <div id="ceo-panel" style="display:none;" class="card" style="border-color: var(--coin);">
+            <h3 style="color:var(--coin); margin-top:0;">🏦 TRÉSORERIE DU FOUNDER</h3>
+            <input type="text" id="target" placeholder="ID du citoyen">
+            <input type="number" id="amt" placeholder="Montant en 💎">
+            <button class="btn-main btn-gift" onclick="processGift()">GÉNÉRER LES K-COINS</button>
         </div>
 
+        <div class="card" style="border: 1px dashed #333;">
+            <p style="font-size:0.8rem; color:#888;"><span class="status-dot"></span> Système Cloud Opérationnel</p>
+            <button onclick="logout()" style="background:none; border:none; color:#ff4444; font-weight:bold; cursor:pointer; margin-top:10px;">🚪 Quitter l'Empire</button>
+        </div>
     </div>
 
-    <nav class="nav" id="nav-bar" style="display:none;">
-        <div class="nav-btn active" onclick="switchTab('wallet')">💰 WALLET</div>
-        <div class="nav-btn" onclick="switchTab('shop')">🛒 SHOP</div>
-        <div class="nav-btn" onclick="alert('Réseau Social Koreli : Bientôt disponible')">📱 SOCIAL</div>
-    </nav>
-
     <script>
-        const PROJECT_URL = "https://ebykrodcycqcpcfuqpzi.supabase.co";
+        const PROJECT_URL = "https://ebykrodcycqcpcfuqpzi.supabase.co"; 
         const PUBLIC_KEY = "sb_publishable_j_DNfP9D_2K3uAzbb6-Giw_cWJJfR8_";
-        const REDIRECT_URL = "https://empire-simulator-ahmedyas09029-cybers-projects.vercel.app/";
         const K_COIN_RATE = 0.05; 
 
         const sb = supabase.createClient(PROJECT_URL, PUBLIC_KEY);
-        let canSend = true;
 
         async function init() {
             const { data: { session } } = await sb.auth.getSession();
@@ -104,50 +77,57 @@
             else { document.getElementById('auth-screen').style.display = 'block'; }
         }
 
-        async function loginWithEmail() {
-            if (!canSend) return;
+        async function handleAuth(type) {
             const email = document.getElementById('email-input').value;
-            if(!email) return alert("Email requis !");
+            const password = document.getElementById('password-input').value;
 
-            const { error } = await sb.auth.signInWithOtp({ email, options: { emailRedirectTo: REDIRECT_URL } });
+            if(!email || !password) return alert("Veuillez remplir tous les champs.");
 
-            if(error) {
-                if(error.status === 429) {
-                    document.getElementById('rate-limit-msg').style.display = 'block';
-                    canSend = false;
-                    setTimeout(() => { canSend = true; document.getElementById('rate-limit-msg').style.display = 'none'; }, 60000);
-                } else { alert(error.message); }
-            } else { alert("Lien envoyé ! Vérifie ta boîte mail."); }
+            let result;
+            if(type === 'signup') {
+                result = await sb.auth.signUp({ email, password });
+                if(!result.error) alert("Compte créé avec succès ! Vous pouvez maintenant vous connecter.");
+            } else {
+                result = await sb.auth.signInWithPassword({ email, password });
+            }
+
+            if(result.error) alert("Erreur : " + result.error.message);
+            else if(result.data.session) showApp(result.data.session.user);
         }
 
         function showApp(user) {
             document.getElementById('auth-screen').style.display = 'none';
             document.getElementById('main-app').style.display = 'block';
-            document.getElementById('nav-bar').style.display = 'flex';
 
             const isCEO = (user.email === "ahmedyas09029@gmail.com");
-            document.getElementById('user-coins').innerText = isCEO ? "ILLIMITÉ" : "0";
-            document.getElementById('user-euros').innerText = isCEO ? "VALEUR : INFINIE" : "0.00 €";
+            document.getElementById('user-email').innerText = user.email;
+            
+            // Calcul des valeurs
+            const coins = isCEO ? "∞" : "0";
+            const valEuros = isCEO ? "VALEUR : INFINIE" : "0.00 €";
+
+            document.getElementById('user-coins').innerText = coins;
+            document.getElementById('user-euros').innerText = valEuros;
             document.getElementById('euro-total').innerText = isCEO ? "👑 CEO" : "0.00 €";
 
             if(isCEO) {
-                document.getElementById('user-badge').innerHTML = '<div class="badge-founder">👑 GRAND FOUNDER</div>';
+                document.getElementById('user-badge').innerHTML = '<div style="background:var(--founder); color:black; padding:8px 20px; border-radius:50px; display:inline-block; font-weight:900; font-size:0.7rem; margin-bottom:10px;">👑 GRAND FOUNDER</div>';
                 document.getElementById('ceo-panel').style.display = 'block';
             }
-        }
-
-        function switchTab(tab) {
-            document.getElementById('tab-wallet').style.display = tab === 'wallet' ? 'block' : 'none';
-            document.getElementById('tab-shop').style.display = tab === 'shop' ? 'block' : 'none';
         }
 
         function processGift() {
             const target = document.getElementById('target').value;
             const amount = document.getElementById('amt').value;
-            if(target && amount) alert(`SUCCESS: ${amount} 💎 envoyés à ${target}.`);
+            if(target && amount) {
+                alert(`💰 ORDRE DU FOUNDER : ${amount} K-Coins transférés à ${target}.`);
+            }
         }
 
-        async function logout() { await sb.auth.signOut(); location.reload(); }
+        async function logout() { 
+            await sb.auth.signOut(); 
+            location.reload(); 
+        }
     </script>
 </body>
 </html>
