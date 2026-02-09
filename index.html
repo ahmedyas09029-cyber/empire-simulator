@@ -3,172 +3,140 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>KORELI NETWORK | E-COMMERCE</title>
+    <title>KORELI NETWORK | PRESTIGE</title>
     <style>
         :root { --accent: #a855f7; --bg: #050505; --card: #121212; --text: #f0f0f0; --coin: #FFD700; --founder: linear-gradient(45deg, #FFD700, #a855f7); }
         body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
         
-        /* Header */
-        .header { padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #1a1a1a; background: rgba(5,5,5,0.9); backdrop-filter: blur(10px); z-index: 100; }
-        .logo { font-weight: 900; font-size: 1.1rem; letter-spacing: 1px; background: linear-gradient(90deg, #fff, #a855f7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .header { padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #1a1a1a; background: rgba(5,5,5,0.9); z-index: 100; }
+        .logo { font-weight: 900; font-size: 1.1rem; background: linear-gradient(90deg, #fff, #a855f7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         .coin-pill { border: 1px solid var(--coin); padding: 5px 12px; border-radius: 20px; color: var(--coin); font-size: 0.8rem; font-weight: bold; }
 
         .content { flex: 1; overflow-y: auto; padding-bottom: 100px; }
-        .page { display: none; padding: 15px; animation: fadeIn 0.3s ease; }
+        .page { display: none; padding: 15px; animation: fadeIn 0.2s ease; }
         .page.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        /* Publication */
-        .studio { background: var(--card); padding: 20px; border-radius: 25px; border: 1px solid #222; margin-bottom: 25px; }
-        textarea { width: 100%; background: none; border: none; color: white; outline: none; font-size: 1rem; resize: none; font-family: inherit; }
+        .card { background: var(--card); padding: 20px; border-radius: 20px; border: 1px solid #222; margin-bottom: 15px; }
+        
+        /* Bouton d'achat "Vrai Argent" */
+        .buy-btn { background: #fff; color: #000; border: none; width: 100%; padding: 15px; border-radius: 12px; font-weight: 900; font-size: 1rem; cursor: pointer; margin-top: 10px; }
+        .buy-btn:active { transform: scale(0.98); }
 
-        /* Posts */
-        .post { background: var(--card); border-radius: 20px; margin-bottom: 20px; overflow: hidden; border: 1px solid #1a1a1a; }
-        .avatar-mini { width: 30px; height: 30px; border-radius: 50%; object-fit: cover; border: 1.5px solid var(--accent); margin-right: 10px; }
-        video { width: 100%; background: #000; display: block; max-height: 60vh; }
-
-        /* Nav */
         .nav { position: fixed; bottom: 15px; left: 50%; transform: translateX(-50%); width: 92%; max-width: 450px; height: 65px; background: rgba(18,18,18,0.95); border-radius: 35px; border: 1px solid #333; display: flex; justify-content: space-around; align-items: center; z-index: 1000; }
         .nav-item { color: #555; font-size: 1.6rem; cursor: pointer; border: none; background: none; }
-        .nav-item.active { color: var(--accent); transform: scale(1.1); }
+        .nav-item.active { color: var(--accent); }
 
-        /* Panel Admin */
-        #admin-panel { background: rgba(255,215,0,0.05); border: 1px solid var(--coin); padding: 15px; border-radius: 20px; margin-top: 20px; display: none; text-align: left; }
+        .legal-box { background: #0a0a0a; border: 1px solid #222; padding: 15px; border-radius: 15px; margin-top: 30px; font-size: 0.75rem; color: #777; text-align: left; }
     </style>
 </head>
 <body onload="init()">
 
     <div class="header">
         <div class="logo">KORELI NETWORK</div>
-        <div class="coin-pill">💎 <span id="top-coins">0</span></div>
+        <div id="coin-display" class="coin-pill">💎 <span id="top-coins">0</span></div>
     </div>
 
     <div class="content">
         <div id="p-home" class="page active">
-            <div class="studio">
-                <textarea id="post-text" placeholder="Publier une annonce CEO..."></textarea>
-                <input type="file" id="vid-file" accept="video/*" style="display:none" onchange="handleVid()">
-                <button onclick="document.getElementById('vid-file').click()" style="width:100%; padding:12px; background:#000; color:var(--accent); border:1px dashed var(--accent); border-radius:12px; margin-bottom:10px; cursor:pointer;">🎥 CHARGER VIDÉO</button>
-                <button onclick="publish()" style="width:100%; padding:12px; background:var(--accent); color:white; border:none; border-radius:12px; font-weight:bold; cursor:pointer;">PUBLIER</button>
+            <div class="card">
+                <textarea id="post-text" style="width:100%; background:none; border:none; color:white; outline:none;" placeholder="Exprimez votre puissance, CEO..."></textarea>
+                <button onclick="publish()" style="width:100%; padding:12px; background:var(--accent); color:white; border:none; border-radius:12px; font-weight:bold; margin-top:10px;">PUBLIER</button>
             </div>
             <div id="feed"></div>
         </div>
 
         <div id="p-shop" class="page">
-            <h2 style="color:var(--coin)">🛒 BOUTIQUE OFFICIELLE</h2>
-            <div style="background:var(--card); padding:25px; border-radius:20px; text-align:center; border:1px solid #333;">
-                <h3 style="margin-top:0;">Pack Crédits</h3>
-                <p style="font-size:1.8rem; font-weight:bold; color:var(--coin);">100 000 💎</p>
-                <button onclick="buy(100000)" style="background:var(--coin); color:black; border:none; padding:12px 30px; border-radius:15px; font-weight:bold; cursor:pointer;">SIMULER L'ACHAT</button>
-                <p style="font-size:0.7rem; color:#555; margin-top:15px;">Les achats sont définitifs et non remboursables.</p>
+            <h2 style="color:var(--coin)">💳 RECHARGER K-COINS</h2>
+            <div class="card" style="text-align: center; border: 1px solid var(--coin);">
+                <p style="color:var(--coin); font-size: 1.2rem; font-weight: bold;">PACK MILLIONNAIRE</p>
+                <h1 style="margin: 10px 0;">1 000 000 💎</h1>
+                <p style="color: #888;">Accès prioritaire + Badge VIP</p>
+                <button class="buy-btn" onclick="realPurchase(1000000, '49.99')">ACHETER POUR 49,99€</button>
+            </div>
+            <div class="card" style="text-align: center;">
+                <p>PACK STARTER</p>
+                <h2 style="margin: 10px 0;">50 000 💎</h2>
+                <button class="buy-btn" onclick="realPurchase(50000, '4.99')">ACHETER POUR 4,99€</button>
             </div>
         </div>
 
         <div id="p-profile" class="page">
-            <div style="text-align:center; margin-top:20px;">
-                <img src="" id="prof-img" style="width:100px; height:100px; border-radius:50%; border:3px solid var(--accent); object-fit: cover;">
-                <h2 id="prof-name" style="margin:10px 0 5px;">Pseudo</h2>
+            <div style="text-align:center;">
+                <img src="https://www.w3schools.com/howto/img_avatar.png" id="prof-img" style="width:80px; height:80px; border-radius:50%; border:2px solid var(--accent);">
+                <h2 id="prof-name">Chargement...</h2>
                 <div id="badge-area"></div>
                 
-                <div style="background:var(--card); padding:20px; border-radius:25px; margin-top:25px; display:flex; justify-content:space-around; border:1px solid #222;">
-                    <div><b style="color:var(--coin); font-size:1.2rem;">💎 <span id="stat-coins">0</span></b><br><small style="color:#666">SOLDE K-COIN</small></div>
-                    <div><b style="color:var(--accent); font-size:1.2rem;" id="stat-vids">0</b><br><small style="color:#666">POSTS</small></div>
+                <div class="card" style="display:flex; justify-content:space-around; margin-top:20px;">
+                    <div><b style="color:var(--coin);" id="stat-coins">0</b><br><small>SOLDE</small></div>
+                    <div><b style="color:var(--accent);" id="stat-vids">0</b><br><small>POSTS</small></div>
                 </div>
 
-                <div id="admin-panel">
-                    <h4 style="margin:0; color:var(--coin);">👑 PANEL ARCHITECTE</h4>
-                    <p style="font-size:0.7rem; color:#888;">Accès restreint aux fondateurs</p>
-                    <button onclick="cheat()" style="background:var(--founder); border:none; padding:8px; border-radius:8px; width:100%; margin-top:10px; font-weight:bold; cursor:pointer;">INJECTER 1M K-COINS</button>
+                <button onclick="changeName()" style="background:#222; color:white; border:none; padding:10px; border-radius:10px; width:100%;">MODIFIER PROFIL</button>
+
+                <div class="legal-box">
+                    <strong style="color:var(--accent)">DOCUMENTATION OFFICIELLE</strong><br>
+                    • <b>Système :</b> Les fonds du Founder sont illimités.<br>
+                    • <b>Achats :</b> Transactions sécurisées via Koreli Gateway (Simulé).<br>
+                    • <b>IA :</b> Modération par Gemini 3 Flash.<br>
                 </div>
-                
-                <button onclick="changeName()" style="margin-top:20px; background:none; border:1px solid #333; color:#888; padding:5px 15px; border-radius:10px; font-size:0.7rem; cursor:pointer;">Modifier Pseudo</button>
             </div>
         </div>
     </div>
 
     <div class="nav">
         <button class="nav-item active" onclick="go('home', this)">🏠</button>
-        <button class="nav-item" onclick="go('shop', this)">🛒</button>
+        <button class="nav-item" onclick="go('shop', this)">💳</button>
         <button class="nav-item" onclick="go('profile', this)">👤</button>
     </div>
 
     <script>
-        let videoData = null;
-        let vCount = 0;
-        
-        // Système de solde : 50k pour Ahmed-Yasin, 0 pour les autres.
-        let savedName = localStorage.getItem('k_name') || "Ahmed-Yasin";
+        let savedName = localStorage.getItem('k_name') || "Invité";
         let savedCoins = localStorage.getItem('k_coins');
-
-        if (savedCoins === null) {
-            savedCoins = (savedName === "Ahmed-Yasin") ? 50000 : 0;
-        }
-
+        
+        // LOGIQUE CEO : Si c'est Ahmed-Yasin, c'est l'infini
+        let isCEO = (savedName === "Ahmed-Yasin");
+        
         let userData = {
             name: savedName,
-            coins: parseInt(savedCoins),
-            avatar: localStorage.getItem('k_avatar') || "https://www.w3schools.com/howto/img_avatar.png"
+            coins: isCEO ? 999999999 : (parseInt(savedCoins) || 0)
         };
 
-        function handleVid() {
-            const file = document.getElementById('vid-file').files[0];
-            const reader = new FileReader();
-            reader.onload = (e) => { videoData = e.target.result; };
-            reader.readAsDataURL(file);
+        function realPurchase(amt, price) {
+            const confirmPay = confirm(`Procéder au paiement sécurisé de ${price}€ pour ${amt.toLocaleString()} K-Coins ?`);
+            if(confirmPay) {
+                alert("Paiement accepté ! Traitement par la banque Koreli...");
+                userData.coins += amt;
+                localStorage.setItem('k_coins', userData.coins);
+                updateUI();
+                alert("Votre compte a été crédité.");
+            }
         }
 
         function publish() {
             const txt = document.getElementById('post-text').value;
-            if(!videoData && !txt) return;
-            const post = `<div class="post">
-                <div style="padding:12px; display:flex; align-items:center;">
-                    <img src="${userData.avatar}" class="avatar-mini"><b>${userData.name}</b>
-                </div>
-                ${videoData ? `<video controls src="${videoData}"></video>` : ''}
-                <div style="padding:15px;">${txt}</div>
-            </div>`;
+            if(!txt) return;
+            const post = `<div class="card"><b>${userData.name}</b><p>${txt}</p></div>`;
             document.getElementById('feed').insertAdjacentHTML('afterbegin', post);
-            vCount++;
-            document.getElementById('stat-vids').innerText = vCount;
             document.getElementById('post-text').value = "";
-            videoData = null;
         }
 
         function changeName() {
-            const n = prompt("Nouveau pseudo :", userData.name);
+            const n = prompt("Nom d'utilisateur :");
             if(n) {
-                userData.name = n;
                 localStorage.setItem('k_name', n);
-                // Si le nom change et qu'il n'est pas Ahmed-Yasin, on peut choisir de remettre à zéro
-                updateUI();
+                location.reload();
             }
         }
 
         function updateUI() {
             const isFounder = (userData.name === "Ahmed-Yasin");
-            document.getElementById('top-coins').innerText = userData.coins.toLocaleString();
-            document.getElementById('stat-coins').innerText = userData.coins.toLocaleString();
+            // Affichage "ILLIMITÉ" pour toi
+            document.getElementById('top-coins').innerText = isFounder ? "∞" : userData.coins.toLocaleString();
+            document.getElementById('stat-coins').innerText = isFounder ? "ILLIMITÉ" : userData.coins.toLocaleString();
             document.getElementById('prof-name').innerText = userData.name;
-            document.getElementById('prof-img').src = userData.avatar;
-            
             document.getElementById('badge-area').innerHTML = isFounder ? 
-                '<span style="background:var(--founder); color:black; padding:4px 12px; border-radius:15px; font-size:0.7rem; font-weight:900;">👑 FOUNDER</span>' : 
-                '<span style="background:#222; padding:4px 12px; border-radius:15px; font-size:0.7rem;">USER</span>';
-            
-            document.getElementById('admin-panel').style.display = isFounder ? 'block' : 'none';
-        }
-
-        function buy(amt) { 
-            userData.coins += amt; 
-            localStorage.setItem('k_coins', userData.coins); 
-            updateUI(); 
-            alert("Transaction réussie.");
-        }
-
-        function cheat() { 
-            userData.coins += 1000000; 
-            localStorage.setItem('k_coins', userData.coins); 
-            updateUI(); 
+                '<span style="background:var(--founder); color:black; padding:5px 15px; border-radius:15px; font-size:0.7rem; font-weight:bold;">👑 GRAND FOUNDER</span>' : '';
         }
 
         function go(id, btn) {
@@ -177,11 +145,7 @@
             document.getElementById('p-' + id).classList.add('active');
             btn.classList.add('active');
         }
-
-        function init() { 
-            updateUI(); 
-            document.getElementById('feed').innerHTML = '<div style="padding:20px; text-align:center; color:#555; font-size:0.8rem;">Aucune nouvelle publication pour le moment.</div>';
-        }
+        function init() { updateUI(); }
     </script>
 </body>
 </html>
