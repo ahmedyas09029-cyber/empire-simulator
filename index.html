@@ -3,89 +3,96 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AY CORPS | LEADERBOARD</title>
+    <title>KORELI | LIVE DEV</title>
     <style>
-        :root { --bg: #010409; --accent: #0070f3; --green: #00dfd8; --card: #0d1117; }
-        body { background: var(--bg); color: white; font-family: 'Inter', sans-serif; margin: 0; text-align: center; }
-        nav { padding: 15px; border-bottom: 1px solid #21262d; background: rgba(1,4,9,0.9); }
+        :root { --k-purple: #a855f7; --k-blue: #3b82f6; --bg: #020617; --card: #0f172a; }
+        body { background: var(--bg); color: #f8fafc; font-family: 'Inter', sans-serif; margin: 0; display: flex; flex-direction: column; height: 100vh; }
         
-        /* Style du Jeu */
-        .game-container { padding: 40px 20px; max-width: 400px; margin: auto; }
-        .score-box { background: var(--card); border: 1px solid #30363d; padding: 25px; border-radius: 20px; margin-bottom: 20px; }
-        .score-num { font-size: 2.8rem; font-weight: 800; color: var(--green); }
-        
-        .click-btn { 
-            width: 120px; height: 120px; border-radius: 50%; border: 4px solid var(--accent);
-            background: #111; color: white; font-size: 2rem; cursor: pointer; transition: 0.1s;
-        }
-        .click-btn:active { transform: scale(0.9); box-shadow: 0 0 20px var(--accent); }
+        /* Header */
+        .header { padding: 15px 5%; border-bottom: 1px solid #1e293b; display: flex; justify-content: space-between; align-items: center; background: #020617; }
+        .logo-k { font-weight: 900; font-size: 1.2rem; background: linear-gradient(to right, var(--k-purple), var(--k-blue)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
 
-        /* Style du Classement */
-        .leaderboard { background: #080a0c; border: 1px solid #222; border-radius: 12px; margin-top: 30px; overflow: hidden; }
-        .lb-header { background: #111; padding: 10px; font-size: 0.7rem; letter-spacing: 2px; color: var(--accent); font-weight: bold; }
-        .lb-row { display: flex; justify-content: space-between; padding: 12px 20px; border-bottom: 1px solid #111; font-size: 0.85rem; }
-        .lb-row:last-child { border: none; }
-        .rank-1 { color: var(--green); font-weight: bold; }
+        /* Main Workspace */
+        .workspace { display: grid; grid-template-columns: 300px 1fr; flex: 1; overflow: hidden; }
+
+        /* Sidebar Profil */
+        .profile-side { background: var(--card); border-right: 1px solid #1e293b; padding: 30px; }
+        .avatar { width: 80px; height: 80px; background: #1e293b; border-radius: 50%; margin: 0 auto 20px; border: 2px solid var(--k-purple); display: flex; align-items: center; justify-content: center; font-size: 2rem; }
+        input[type="text"] { width: 100%; background: #000; border: 1px solid #334155; color: white; padding: 10px; border-radius: 8px; margin-bottom: 10px; font-size: 0.8rem; }
+
+        /* Chat Terminal */
+        .chat-area { display: flex; flex-direction: column; padding: 20px; }
+        .messages { flex: 1; overflow-y: auto; background: #000; border: 1px solid #1e293b; border-radius: 12px; padding: 20px; font-family: 'Fira Code', monospace; font-size: 0.85rem; }
+        .msg { margin-bottom: 15px; line-height: 1.4; }
+        .msg.partner { color: var(--k-blue); }
+        .msg.user { color: #10b981; }
+
+        .input-area { margin-top: 20px; display: flex; gap: 10px; }
+        .chat-input { flex: 1; background: #0f172a; border: 1px solid #334155; color: white; padding: 15px; border-radius: 10px; outline: none; }
+        .btn-send { background: var(--k-purple); border: none; padding: 0 25px; border-radius: 10px; color: white; font-weight: bold; cursor: pointer; }
     </style>
 </head>
 <body onload="init()">
 
-    <nav><strong>AHMED-YASIN CORPS</strong></nav>
+    <div class="header">
+        <div class="logo-k">KORELI ENGINE</div>
+        <div style="font-size: 0.7rem; color: #64748b;">PARTENAIRE : GEMINI (AI)</div>
+    </div>
 
-    <div class="game-container">
-        <div class="score-box">
-            <div class="score-num" id="pts">0</div>
-            <div style="font-size:0.7rem; color:var(--accent); letter-spacing:1px">POINTS D'EMPIRE</div>
-            <br>
-            <button class="click-btn" onclick="hit()">⚡</button>
+    <div class="workspace">
+        <div class="profile-side">
+            <div class="avatar" id="avatar-icon">👤</div>
+            <h3 style="text-align:center; margin-bottom:20px;">Mon Profil Dev</h3>
+            <label style="font-size:0.7rem; color:#64748b;">PSEUDO</label>
+            <input type="text" id="username" placeholder="Ahmed-Yasin" onkeyup="updateProfile()">
+            <label style="font-size:0.7rem; color:#64748b;">BIO KORELI</label>
+            <input type="text" id="bio" placeholder="CEO & Lead Dev" onkeyup="updateProfile()">
+            <div style="margin-top:20px; font-size:0.7rem; color:#475569;">STATUT: <span style="color:#10b981">EN LIGNE</span></div>
         </div>
 
-        <div class="leaderboard">
-            <div class="lb-header">CLASSEMENT MONDIAL (SIMULÉ)</div>
-            <div id="lb-content">
-                </div>
+        <div class="chat-area">
+            <div class="messages" id="chat-box">
+                <div class="msg partner"><strong>[GEMINI] :</strong> Ahmed-Yasin, j'ai activé le module de profil. Ton site enregistre maintenant tes infos localement.</div>
+                <div class="msg partner"><strong>[GEMINI] :</strong> Écris-moi ici, je suis prêt pour l'étape suivante du code.</div>
+            </div>
+            <div class="input-area">
+                <input type="text" class="chat-input" id="user-input" placeholder="Discute avec ton partenaire de code..." onkeypress="if(event.key === 'Enter') sendMessage()">
+                <button class="btn-send" onclick="sendMessage()">ENVOYER</button>
+            </div>
         </div>
-        
-        <button onclick="resetScore()" style="margin-top:20px; background:none; border:none; color:#333; font-size:0.6rem; cursor:pointer;">RÉINITIALISER MON SCORE</button>
     </div>
 
     <script>
-        let score = 0;
-        let fakePlayers = [
-            {name: "Elon M.", score: 500000},
-            {name: "Gojo S.", score: 250000},
-            {name: "Traders_Pro", score: 100000}
-        ];
+        function sendMessage() {
+            const input = document.getElementById('user-input');
+            const chatBox = document.getElementById('chat-box');
+            if(!input.value) return;
 
-        function hit() {
-            score += 10;
-            updateUI();
-            save();
-        }
-
-        function updateUI() {
-            document.getElementById('pts').innerText = score;
+            // Ajout du message utilisateur
+            const name = document.getElementById('username').value || "Moi";
+            chatBox.innerHTML += `<div class="msg user"><strong>[${name.toUpperCase()}] :</strong> ${input.value}</div>`;
             
-            // On ajoute toi au classement
-            let allPlayers = [...fakePlayers, {name: "MOI (Ahmed-Yasin)", score: score}];
-            allPlayers.sort((a, b) => b.score - a.score);
+            // Simulation de réponse partenaire
+            const val = input.value.toLowerCase();
+            setTimeout(() => {
+                let response = "Bien reçu. On continue sur le module de Profil ou on passe à la suite ?";
+                if(val.includes("code")) response = "Je prépare le script pour l'enregistrement des données. Prêt ?";
+                chatBox.innerHTML += `<div class="msg partner"><strong>[GEMINI] :</strong> ${response}</div>`;
+                chatBox.scrollTop = chatBox.scrollHeight;
+            }, 1000);
 
-            const content = document.getElementById('lb-content');
-            content.innerHTML = allPlayers.slice(0, 5).map((p, i) => `
-                <div class="lb-row ${i === 0 ? 'rank-1' : ''}">
-                    <span>${i + 1}. ${p.name}</span>
-                    <span>${p.score.toLocaleString()}</span>
-                </div>
-            `).join('');
+            input.value = "";
+            chatBox.scrollTop = chatBox.scrollHeight;
         }
 
-        function save() { localStorage.setItem('ay_score', score); }
-        function resetScore() { score = 0; save(); updateUI(); }
+        function updateProfile() {
+            localStorage.setItem('k_user', document.getElementById('username').value);
+            localStorage.setItem('k_bio', document.getElementById('bio').value);
+        }
 
         function init() {
-            const saved = localStorage.getItem('ay_score');
-            if(saved) score = parseInt(saved);
-            updateUI();
+            if(localStorage.getItem('k_user')) document.getElementById('username').value = localStorage.getItem('k_user');
+            if(localStorage.getItem('k_bio')) document.getElementById('bio').value = localStorage.getItem('k_bio');
         }
     </script>
 </body>
