@@ -3,158 +3,231 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>KORELI | EMPIRE EDITION</title>
+    <title>KORELI NETWORK | ARCHITECT</title>
     <style>
-        :root { --accent: #a855f7; --bg: #050505; --card: #121212; --text: #f0f0f0; --coin: #FFD700; }
-        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+        :root { --accent: #a855f7; --bg: #050505; --card: #121212; --text: #f0f0f0; --coin: #FFD700; --founder: linear-gradient(45deg, #FFD700, #a855f7); }
+        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', Roboto, sans-serif; margin: 0; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
         
         /* Header */
         .header { padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #1a1a1a; background: rgba(5,5,5,0.9); backdrop-filter: blur(10px); z-index: 100; }
-        .logo { font-weight: 900; font-size: 1.5rem; background: linear-gradient(90deg, #fff, #a855f7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .coin-pill { border: 1px solid var(--coin); padding: 5px 12px; border-radius: 20px; color: var(--coin); font-size: 0.8rem; font-weight: bold; box-shadow: 0 0 10px rgba(255,215,0,0.1); }
+        .logo { font-weight: 900; font-size: 1.1rem; letter-spacing: 1px; background: linear-gradient(90deg, #fff, #a855f7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .coin-pill { border: 1px solid var(--coin); padding: 5px 12px; border-radius: 20px; color: var(--coin); font-size: 0.8rem; font-weight: bold; }
 
         .content { flex: 1; overflow-y: auto; padding-bottom: 100px; scroll-behavior: smooth; }
         .page { display: none; padding: 15px; animation: fadeIn 0.3s ease; }
         .page.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Publication */
-        .studio { background: var(--card); padding: 20px; border-radius: 20px; border: 1px solid #222; margin-bottom: 20px; }
-        textarea { width: 100%; background: none; border: none; color: white; outline: none; font-size: 1rem; resize: none; min-height: 60px; }
-        .btn-action { width: 100%; padding: 12px; border-radius: 12px; font-weight: bold; cursor: pointer; border: none; margin-top: 10px; transition: 0.2s; }
+        /* Studio d'Upload */
+        .studio { background: var(--card); padding: 20px; border-radius: 25px; border: 1px solid #222; margin-bottom: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        textarea { width: 100%; background: none; border: none; color: white; outline: none; font-size: 1rem; resize: none; font-family: inherit; margin-bottom: 10px; }
 
         /* Posts */
         .post { background: var(--card); border-radius: 20px; margin-bottom: 20px; overflow: hidden; border: 1px solid #1a1a1a; }
-        .post-header { padding: 12px; display: flex; align-items: center; gap: 10px; font-weight: bold; }
-        .avatar-mini { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; border: 1px solid var(--accent); }
-        video { width: 100%; background: #000; max-height: 70vh; }
+        .post-header { padding: 12px; display: flex; align-items: center; justify-content: space-between; }
+        .user-info { display: flex; align-items: center; gap: 10px; font-weight: bold; font-size: 0.9rem; }
+        .avatar-mini { width: 30px; height: 30px; border-radius: 50%; object-fit: cover; border: 1.5px solid var(--accent); }
+        video { width: 100%; background: #000; display: block; max-height: 70vh; }
 
-        /* Profil */
-        .profile-hero { text-align: center; padding: 30px 10px; }
-        .avatar-main { width: 110px; height: 110px; border-radius: 50%; object-fit: cover; border: 3px solid var(--accent); margin: 0 auto 15px; display: block; cursor: pointer; box-shadow: 0 0 20px rgba(168, 85, 247, 0.3); }
-        .ceo-badge { background: var(--accent); color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: bold; text-transform: uppercase; }
+        /* Panel Admin */
+        #admin-panel { background: rgba(168, 85, 247, 0.05); border: 1px solid var(--founder); padding: 20px; border-radius: 20px; margin-top: 20px; display: none; text-align: left; }
 
         /* Navigation */
-        .nav { position: fixed; bottom: 15px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 400px; height: 65px; background: rgba(18,18,18,0.95); backdrop-filter: blur(15px); border-radius: 30px; border: 1px solid #333; display: flex; justify-content: space-around; align-items: center; z-index: 1000; }
+        .nav { position: fixed; bottom: 15px; left: 50%; transform: translateX(-50%); width: 92%; max-width: 450px; height: 65px; background: rgba(18,18,18,0.95); border-radius: 35px; border: 1px solid #333; display: flex; justify-content: space-around; align-items: center; z-index: 1000; box-shadow: 0 10px 40px rgba(0,0,0,1); }
         .nav-item { color: #555; font-size: 1.6rem; cursor: pointer; border: none; background: none; transition: 0.3s; padding: 10px; }
-        .nav-item.active { color: var(--accent); transform: translateY(-5px); }
+        .nav-item.active { color: var(--accent); transform: scale(1.2); }
+
+        /* Modals */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 2000; padding: 20px; box-sizing: border-box; }
+        .modal-content { background: var(--card); border-radius: 30px; padding: 25px; border: 1px solid #333; max-width: 500px; margin: 40px auto; }
+        .setting-row { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid #222; }
+        .btn-main { width: 100%; padding: 12px; border-radius: 12px; font-weight: bold; border: none; cursor: pointer; transition: 0.2s; }
     </style>
 </head>
 <body onload="init()">
 
     <div class="header">
-        <div class="logo">KORELI</div>
-        <div class="coin-pill">💎 <span id="top-coins">50000</span></div>
+        <div class="logo">KORELI NETWORK</div>
+        <div class="coin-pill">💎 <span id="top-coins">0</span></div>
     </div>
 
     <div class="content">
         <div id="p-home" class="page active">
             <div class="studio">
-                <textarea id="post-text" placeholder="Quoi de neuf, CEO ?"></textarea>
+                <textarea id="post-text" placeholder="Quoi de neuf, Architecte ?"></textarea>
                 <input type="file" id="vid-file" accept="video/*" style="display:none" onchange="handleVid()">
-                <button onclick="document.getElementById('vid-file').click()" style="background:#0a0a0a; color:var(--accent); border:1px dashed var(--accent);" class="btn-action">🎥 AJOUTER UNE VIDÉO</button>
-                <button onclick="publish()" style="background:var(--accent); color:white;" class="btn-action">PUBLIER SUR LE FLUX</button>
+                <button onclick="document.getElementById('vid-file').click()" style="background:#0a0a0a; color:var(--accent); border:1px dashed var(--accent); margin-bottom:10px;" class="btn-main">🎥 CHARGER UNE VIDÉO</button>
+                <button onclick="publish()" style="background:var(--accent); color:white;" class="btn-main">PUBLIER SUR LE RÉSEAU</button>
             </div>
             <div id="feed"></div>
         </div>
 
+        <div id="p-shop" class="page">
+            <h2 style="color:var(--coin)">🛒 BOUTIQUE K-COINS</h2>
+            <div style="background:var(--card); padding:30px; border-radius:25px; text-align:center; border:1px solid #333;">
+                <h3 style="margin:0;">PACK FONDATEUR</h3>
+                <p style="font-size:2rem; font-weight:900; color:var(--coin); margin:10px 0;">100 000 💎</p>
+                <button onclick="buy(100000)" style="background:var(--coin); color:black;" class="btn-main">SIMULER L'ACHAT</button>
+            </div>
+        </div>
+
         <div id="p-profile" class="page">
-            <div class="profile-hero">
-                <input type="file" id="avatar-file" accept="image/*" style="display:none" onchange="changeAvatar()">
-                <img src="https://www.w3schools.com/howto/img_avatar.png" id="prof-img" class="avatar-main" onclick="document.getElementById('avatar-file').click()">
-                <h2 id="prof-name" onclick="rename()" style="margin: 10px 0; cursor:pointer;">Ahmed-Yasin ✏️</h2>
-                <div class="ceo-badge">CEO & Founder</div>
+            <div style="display:flex; justify-content:flex-end;">
+                <button onclick="toggleSettings(true)" style="background:none; border:none; color:white; font-size:1.8rem; cursor:pointer;">⚙️</button>
+            </div>
+            <div style="text-align:center;">
+                <img src="" id="prof-img" style="width:110px; height:110px; border-radius:50%; border:3px solid var(--accent); object-fit: cover; margin-bottom:15px;">
+                <h2 id="prof-name" style="margin:0;">Pseudo</h2>
+                <div id="badge-area" style="margin-top:8px;"></div>
                 
-                <div style="display:flex; gap:10px; margin-top:25px; justify-content:center;">
-                    <div style="background:var(--card); padding:15px; border-radius:15px; border:1px solid #222; flex:1;">
-                        <div style="color:var(--coin); font-size:1.2rem; font-weight:bold;">💎 <span id="stat-coins">50000</span></div>
-                        <div style="font-size:0.7rem; color:#666;">K-COINS</div>
-                    </div>
-                    <div style="background:var(--card); padding:15px; border-radius:15px; border:1px solid #222; flex:1;">
-                        <div style="color:var(--accent); font-size:1.2rem; font-weight:bold;" id="stat-vids">0</div>
-                        <div style="font-size:0.7rem; color:#666;">VIDÉOS</div>
-                    </div>
+                <div style="background:var(--card); padding:20px; border-radius:25px; margin-top:25px; display:flex; justify-content:space-around; border:1px solid #222;">
+                    <div><b style="color:var(--coin); font-size:1.3rem;">💎 <span id="stat-coins">0</span></b><br><small style="color:#666">K-COINS</small></div>
+                    <div><b style="color:var(--accent); font-size:1.3rem;" id="stat-vids">0</b><br><small style="color:#666">VIDÉOS</small></div>
                 </div>
 
-                <button onclick="shareProfile()" style="background:#1a1a1a; color:white; border:1px solid #333; margin-top:20px;" class="btn-action">🔗 PARTAGER MON PROFIL</button>
+                <div id="admin-panel">
+                    <h4 style="margin:0; color:var(--coin);">👑 PANEL ARCHITECTE</h4>
+                    <p style="font-size:0.75rem; color:#888; margin:5px 0 15px;">Contrôle total du Network</p>
+                    <div style="font-size:0.85rem; line-height:1.6;">
+                        🌐 Statut : <span style="color:#00ff00;">ONLINE (Local)</span><br>
+                        👥 Serveur : <span style="color:var(--accent);">Koreli-Main-v46</span><br>
+                        📊 Revenus estimables : <span style="color:var(--coin);">0.00 €</span>
+                    </div>
+                    <button onclick="cheatCoins()" style="background:var(--founder); color:black; margin-top:15px; font-size:0.7rem;" class="btn-main">INJECTER 1M K-COINS</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="settings-modal" class="modal">
+        <div class="modal-content">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <h2 style="margin:0;">Paramètres</h2>
+                <button onclick="toggleSettings(false)" style="background:none; border:none; color:var(--accent); font-weight:bold; cursor:pointer;">FERMER</button>
+            </div>
+            <div style="margin-top:25px;">
+                <div class="setting-row">
+                    <span>Modifier le Pseudo</span>
+                    <button onclick="rename()" style="background:#222; color:white; border:none; padding:8px 15px; border-radius:10px;">Editer</button>
+                </div>
+                <div class="setting-row">
+                    <span>Modifier la Photo</span>
+                    <button onclick="document.getElementById('avatar-file').click()" style="background:#222; color:white; border:none; padding:8px 15px; border-radius:10px;">Changer</button>
+                    <input type="file" id="avatar-file" accept="image/*" style="display:none" onchange="changeAvatar()">
+                </div>
+                <div style="background: rgba(168, 85, 247, 0.1); padding: 15px; border-radius: 15px; margin-top:20px;">
+                    <span style="font-weight: bold; color: var(--accent);">📊 REVENUS NETWORK</span>
+                    <div style="display:flex; justify-content:space-between; margin-top:10px; font-size:0.9rem;">
+                        <span>Solde K-Coins</span>
+                        <span id="income-val" style="color:var(--coin); font-weight:bold;">0.00 €</span>
+                    </div>
+                </div>
+                <button onclick="resetData()" style="width:100%; background:none; border:1px solid #ff4444; color:#ff4444; margin-top:30px;" class="btn-main">RÉINITIALISER TOUT</button>
             </div>
         </div>
     </div>
 
     <div class="nav">
         <button class="nav-item active" onclick="go('home', this)">🏠</button>
+        <button class="nav-item" onclick="go('shop', this)">🛒</button>
         <button class="nav-item" onclick="go('profile', this)">👤</button>
     </div>
 
     <script>
-        let currentVideo = null;
-        let videoCount = 0;
+        let videoData = null;
+        let vCount = 0;
         let userData = {
-            name: "Ahmed-Yasin",
-            avatar: "https://www.w3schools.com/howto/img_avatar.png",
-            coins: 50000
+            name: localStorage.getItem('k_name') || "Ahmed-Yasin",
+            coins: parseInt(localStorage.getItem('k_coins')) || 50000,
+            avatar: localStorage.getItem('k_avatar') || "https://www.w3schools.com/howto/img_avatar.png"
         };
 
-        const BANNED = ["fuck", "merde", "hack", "pirate", "money"]; // Bot Sentinel
+        function toggleSettings(show) {
+            document.getElementById('settings-modal').style.display = show ? 'block' : 'none';
+        }
 
         function handleVid() {
             const file = document.getElementById('vid-file').files[0];
             const reader = new FileReader();
-            reader.onload = (e) => { currentVideo = e.target.result; };
+            reader.onload = (e) => { videoData = e.target.result; };
             reader.readAsDataURL(file);
+        }
+
+        function publish() {
+            const text = document.getElementById('post-text').value;
+            if(!videoData && !text) return;
+            
+            const post = `
+                <div class="post">
+                    <div class="post-header">
+                        <div class="user-info">
+                            <img src="${userData.avatar}" class="avatar-mini">
+                            ${userData.name}
+                        </div>
+                        <span style="color:#555; font-size:0.6rem;">À L'INSTANT</span>
+                    </div>
+                    ${videoData ? `<video controls src="${videoData}"></video>` : ''}
+                    <div style="padding:15px; font-size:0.95rem; line-height:1.4;">${text}</div>
+                </div>`;
+            
+            document.getElementById('feed').insertAdjacentHTML('afterbegin', post);
+            vCount++;
+            document.getElementById('stat-vids').innerText = vCount;
+            document.getElementById('post-text').value = "";
+            videoData = null;
+        }
+
+        function buy(amt) {
+            userData.coins += amt;
+            localStorage.setItem('k_coins', userData.coins);
+            updateUI();
+            alert("Compte crédité avec succès !");
+        }
+
+        function cheatCoins() {
+            userData.coins += 1000000;
+            localStorage.setItem('k_coins', userData.coins);
+            updateUI();
+        }
+
+        function rename() {
+            const n = prompt("Nouveau pseudo :", userData.name);
+            if(n) { userData.name = n; localStorage.setItem('k_name', n); updateUI(); }
         }
 
         function changeAvatar() {
             const file = document.getElementById('avatar-file').files[0];
             const reader = new FileReader();
             reader.onload = (e) => { 
-                userData.avatar = e.target.result;
-                document.getElementById('prof-img').src = userData.avatar;
-                localStorage.setItem('k_avatar', userData.avatar);
+                userData.avatar = e.target.result; 
+                localStorage.setItem('k_avatar', userData.avatar); 
+                updateUI(); 
             };
             reader.readAsDataURL(file);
         }
 
-        function rename() {
-            const n = prompt("Modifier ton pseudo CEO :", userData.name);
-            if(n) {
-                userData.name = n;
-                document.getElementById('prof-name').innerText = n + " ✏️";
-                localStorage.setItem('k_name', n);
-            }
+        function resetData() {
+            if(confirm("Effacer tout ton empire ?")) { localStorage.clear(); location.reload(); }
         }
 
-        function publish() {
-            const text = document.getElementById('post-text').value;
-            // Bot de modération
-            if(BANNED.some(w => text.toLowerCase().includes(w))) {
-                alert("🤖 BOT SENTINEL : Message bloqué pour non-respect des règles.");
-                return;
-            }
-
-            if(!currentVideo && !text) return;
-
-            const post = `
-                <div class="post">
-                    <div class="post-header">
-                        <img src="${userData.avatar}" class="avatar-mini">
-                        ${userData.name} <span style="color:var(--accent); font-size:0.6rem;">CEO</span>
-                    </div>
-                    ${currentVideo ? `<video controls src="${currentVideo}"></video>` : ''}
-                    <div style="padding:15px; font-size:0.95rem; line-height:1.4;">${text}</div>
-                </div>`;
+        function updateUI() {
+            const isAdmin = (userData.name === "Ahmed-Yasin");
             
-            document.getElementById('feed').insertAdjacentHTML('afterbegin', post);
-            videoCount++;
-            document.getElementById('stat-vids').innerText = videoCount;
-            document.getElementById('post-text').value = "";
-            currentVideo = null;
-        }
+            document.getElementById('top-coins').innerText = userData.coins.toLocaleString();
+            document.getElementById('stat-coins').innerText = userData.coins.toLocaleString();
+            document.getElementById('prof-name').innerText = userData.name;
+            document.getElementById('prof-img').src = userData.avatar;
+            document.getElementById('income-val').innerText = (userData.coins / 1000).toFixed(2) + " €";
 
-        function shareProfile() {
-            const url = window.location.href;
-            navigator.clipboard.writeText(url);
-            alert("Lien du profil Koreli copié ! Prêt à être envoyé.");
+            // Badge Area
+            const badgeArea = document.getElementById('badge-area');
+            if (isAdmin) {
+                badgeArea.innerHTML = '<span style="background:var(--founder); color:black; padding:4px 12px; border-radius:15px; font-size:0.7rem; font-weight:900;">👑 FOUNDER & ARCHITECT</span>';
+                document.getElementById('admin-panel').style.display = "block";
+            } else {
+                badgeArea.innerHTML = '<span style="background:#222; color:#888; padding:4px 12px; border-radius:15px; font-size:0.7rem; font-weight:bold;">DEVELOPER</span>';
+                document.getElementById('admin-panel').style.display = "none";
+            }
         }
 
         function go(id, btn) {
@@ -165,14 +238,15 @@
         }
 
         function init() {
-            userData.name = localStorage.getItem('k_name') || "Ahmed-Yasin";
-            userData.avatar = localStorage.getItem('k_avatar') || "https://www.w3schools.com/howto/img_avatar.png";
-            userData.coins = localStorage.getItem('k_coins') || "50000";
-
-            document.getElementById('top-coins').innerText = userData.coins;
-            document.getElementById('stat-coins').innerText = userData.coins;
-            document.getElementById('prof-name').innerText = userData.name + " ✏️";
-            document.getElementById('prof-img').src = userData.avatar;
+            updateUI();
+            // Simuler un post système
+            document.getElementById('feed').innerHTML = `
+                <div class="post" style="border:1.5px solid var(--accent); background:rgba(168, 85, 247, 0.05);">
+                    <div style="padding:15px; text-align:center;">
+                        <h4 style="margin:0; color:var(--accent);">KORELI NETWORK v46.0</h4>
+                        <p style="font-size:0.8rem; color:#aaa;">Bienvenue dans ton empire. Connecte-toi à Supabase pour activer le Cloud mondial.</p>
+                    </div>
+                </div>`;
         }
     </script>
 </body>
