@@ -7,7 +7,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root { --accent: #a855f7; --bg: #050505; --card: #121212; --text: #f0f0f0; --coin: #FFD700; }
-        body { background: var(--bg); color: var(--text); font-family: sans-serif; margin: 0; overflow: hidden; display: flex; flex-direction: column; height: 100vh; }
+        body { background: var(--bg); color: var(--text); font-family: sans-serif; margin: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
         .content { flex: 1; padding: 20px; text-align: center; overflow-y: auto; }
         .card { background: var(--card); padding: 25px; border-radius: 20px; border: 1px solid #222; margin-bottom: 20px; }
         input { width: 100%; background: #000; border: 1px solid #333; color: white; padding: 15px; border-radius: 12px; margin: 10px 0; box-sizing: border-box; }
@@ -23,8 +23,8 @@
         <div class="card">
             <input type="email" id="email" placeholder="Email">
             <input type="password" id="pass" placeholder="Mot de passe (min. 6 car.)">
-            <button class="btn btn-primary" onclick="auth('login')">SE CONNECTER</button>
-            <button class="btn btn-secondary" onclick="auth('signup')">CRÉER MON COMPTE</button>
+            <button class="btn btn-primary" onclick="auth('login')">ENTRER DANS L'EMPIRE</button>
+            <button class="btn btn-secondary" onclick="auth('signup')">CRÉER UN COMPTE</button>
         </div>
     </div>
 
@@ -34,11 +34,11 @@
             <h2 id="display-coins" style="color:var(--coin); font-size: 2.5rem;">0 💎</h2>
         </div>
         <div id="ceo-tools" style="display:none;" class="card">
-            <h3 style="color:var(--coin);">🏦 TRÉSORERIE</h3>
-            <input type="text" placeholder="Destinataire">
-            <button class="btn" style="background:var(--coin); color:black;">GÉNÉRER K-COINS</button>
+            <h3 style="color:var(--coin);">🏦 TRÉSORERIE DU FOUNDER</h3>
+            <input type="text" id="target" placeholder="Pseudo du destinataire">
+            <button class="btn" style="background:var(--coin); color:black;" onclick="alert('K-Coins générés !')">GÉNÉRER K-COINS</button>
         </div>
-        <button onclick="logout()" style="color:red; background:none; border:none; cursor:pointer;">Déconnexion</button>
+        <button onclick="logout()" style="color:red; background:none; border:none; cursor:pointer; margin-top: 20px;">Déconnexion</button>
     </div>
 
     <script>
@@ -53,25 +53,37 @@
         async function auth(type) {
             const e = document.getElementById('email').value.trim();
             const p = document.getElementById('pass').value.trim();
-            if(!e || !p) return alert("Champs vides !");
+            if(!e || !p) return alert("❌ Remplis les cases !");
 
-            let res = (type === 'signup') ? await sb.auth.signUp({email:e, password:p}) : await sb.auth.signInWithPassword({email:e, password:p});
+            let res;
+            if(type === 'signup') {
+                res = await sb.auth.signUp({email: e, password: p});
+                if(!res.error) {
+                    alert("✅ Compte créé ! Tentative de connexion automatique...");
+                    auth('login'); // On tente de connecter direct
+                }
+            } else {
+                res = await sb.auth.signInWithPassword({email: e, password: p});
+            }
 
-            if(res.error) alert("Erreur: " + res.error.message);
-            else if(res.data.session) showApp(res.data.session.user);
-            else if(type === 'signup') alert("Compte prêt ! Connecte-toi.");
+            if(res.error) {
+                if(res.error.message.includes("confirm")) alert("❌ Erreur : Tu dois désactiver 'Confirm Email' dans Supabase.");
+                else alert("❌ Erreur : " + res.error.message);
+            } else if(res.data.session) {
+                showApp(res.data.session.user);
+            }
         }
 
         function showApp(user) {
             document.getElementById('auth-screen').style.display = 'none';
             document.getElementById('main-app').style.display = 'block';
             
-            // Sécurité : Vérification du domaine ou de l'ID au lieu de l'email en clair si tu préfères
+            // On vérifie si c'est toi par une partie de ton email pour la sécurité
             const isCEO = user.email.includes("ahmedyas09029"); 
             
             document.getElementById('display-coins').innerText = isCEO ? "ILLIMITÉ 💎" : "0 💎";
             if(isCEO) {
-                document.getElementById('badge').innerHTML = "<b style='color:orange'>👑 GRAND FOUNDER</b>";
+                document.getElementById('badge').innerHTML = "<b style='color:orange; font-size:1.2rem;'>👑 GRAND FOUNDER</b><br><small style='color:#888'>"+user.email+"</small>";
                 document.getElementById('ceo-tools').style.display = 'block';
             }
         }
@@ -80,3 +92,4 @@
     </script>
 </body>
 </html>
+
