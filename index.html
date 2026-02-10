@@ -3,57 +3,46 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>KORELI | OFFICIAL EMPIRE</title>
+    <title>KORELI NETWORK</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        :root { --accent: #a855f7; --bg: #050505; --card: #121212; --text: #f0f0f0; --coin: #FFD700; --euro: #00ff88; --founder: linear-gradient(135deg, #FFD700, #ff8800); }
-        body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; margin: 0; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
-        .header { padding: 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #222; background: rgba(5,5,5,0.8); backdrop-filter: blur(10px); }
-        .logo { font-weight: 900; font-size: 1.4rem; background: linear-gradient(90deg, #fff, var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .content { flex: 1; overflow-y: auto; padding: 20px; padding-bottom: 100px; }
-        .card { background: var(--card); padding: 25px; border-radius: 24px; border: 1px solid #222; margin-bottom: 20px; text-align: center; }
-        .input-group { position: relative; width: 100%; }
-        input { width: 100%; background: #000; border: 1px solid #333; color: white; padding: 15px; border-radius: 16px; margin: 8px 0; box-sizing: border-box; font-size: 1rem; }
-        .btn-main { width: 100%; padding: 16px; border-radius: 16px; border: none; font-weight: 800; cursor: pointer; font-size: 1rem; margin-top: 10px; }
-        .btn-auth { background: white; color: black; }
-        .btn-signup { background: transparent; color: var(--accent); border: 1px solid var(--accent); margin-top: 15px; }
+        :root { --accent: #a855f7; --bg: #050505; --card: #121212; --text: #f0f0f0; --coin: #FFD700; }
+        body { background: var(--bg); color: var(--text); font-family: sans-serif; margin: 0; overflow: hidden; display: flex; flex-direction: column; height: 100vh; }
+        .content { flex: 1; padding: 20px; text-align: center; overflow-y: auto; }
+        .card { background: var(--card); padding: 25px; border-radius: 20px; border: 1px solid #222; margin-bottom: 20px; }
+        input { width: 100%; background: #000; border: 1px solid #333; color: white; padding: 15px; border-radius: 12px; margin: 10px 0; box-sizing: border-box; }
+        .btn { width: 100%; padding: 16px; border-radius: 12px; border: none; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .btn-primary { background: white; color: black; }
+        .btn-secondary { background: transparent; color: var(--accent); border: 1px solid var(--accent); }
     </style>
 </head>
 <body onload="init()">
 
-    <div class="header">
-        <div class="logo">KORELI NETWORK</div>
-        <div id="euro-total" style="color:var(--euro); font-weight:bold;">0.00 €</div>
-    </div>
-
-    <div id="auth-screen" style="display:none; padding:50px 30px; text-align:center;">
-        <div style="font-size: 4rem;">🔑</div>
-        <h1>Empire Koreli</h1>
-        <p style="color:#666; margin-bottom:20px;">Vérifie bien tes infos avant de cliquer.</p>
-        
-        <input type="email" id="email-input" placeholder="Ton Email (ex: ahmedyas09029@gmail.com)">
-        <div class="input-group">
-            <input type="password" id="password-input" placeholder="Ton Mot de Passe">
-            <button onclick="togglePass()" style="position:absolute; right:10px; top:18px; background:none; border:none; color:var(--accent); font-size:0.8rem; cursor:pointer;">VOIR</button>
+    <div id="auth-screen" style="display:none;" class="content">
+        <h1 style="margin-top:50px;">👑 Accès Koreli</h1>
+        <div class="card">
+            <input type="email" id="email" placeholder="Email">
+            <input type="password" id="pass" placeholder="Mot de passe (min. 6 car.)">
+            <button class="btn btn-primary" onclick="auth('login')">SE CONNECTER</button>
+            <button class="btn btn-secondary" onclick="auth('signup')">CRÉER MON COMPTE</button>
         </div>
-        
-        <button class="btn-main btn-auth" onclick="handleAuth('login')">SE CONNECTER</button>
-        <button class="btn-main btn-signup" onclick="handleAuth('signup')">CRÉER UN COMPTE</button>
     </div>
 
     <div id="main-app" style="display:none;" class="content">
         <div class="card">
-            <div style="background:var(--founder); color:black; padding:8px 20px; border-radius:50px; display:inline-block; font-weight:900; font-size:0.75rem; margin-bottom:10px;" id="founder-badge">👑 GRAND FOUNDER</div>
-            <div id="user-email" style="font-size:0.8rem; color:#888; margin:10px 0;"></div>
-            <div style="font-size:2.8rem; font-weight:900; color:var(--coin);" id="user-coins">0</div>
+            <div id="badge"></div>
+            <h2 id="display-coins" style="color:var(--coin); font-size: 2.5rem;">0 💎</h2>
         </div>
-        <button onclick="logout()" style="background:none; border:none; color:#ff4444; font-weight:bold; cursor:pointer; width:100%;">🚪 Déconnexion</button>
+        <div id="ceo-tools" style="display:none;" class="card">
+            <h3 style="color:var(--coin);">🏦 TRÉSORERIE</h3>
+            <input type="text" placeholder="Destinataire">
+            <button class="btn" style="background:var(--coin); color:black;">GÉNÉRER K-COINS</button>
+        </div>
+        <button onclick="logout()" style="color:red; background:none; border:none; cursor:pointer;">Déconnexion</button>
     </div>
 
     <script>
-        const PROJECT_URL = "https://ebykrodcycqcpcfuqpzi.supabase.co"; 
-        const PUBLIC_KEY = "sb_publishable_j_DNfP9D_2K3uAzbb6-Giw_cWJJfR8_";
-        const sb = supabase.createClient(PROJECT_URL, PUBLIC_KEY);
+        const sb = supabase.createClient("https://ebykrodcycqcpcfuqpzi.supabase.co", "sb_publishable_j_DNfP9D_2K3uAzbb6-Giw_cWJJfR8_");
 
         async function init() {
             const { data: { session } } = await sb.auth.getSession();
@@ -61,40 +50,33 @@
             else document.getElementById('auth-screen').style.display = 'block';
         }
 
-        function togglePass() {
-            const p = document.getElementById('password-input');
-            p.type = p.type === "password" ? "text" : "password";
-        }
+        async function auth(type) {
+            const e = document.getElementById('email').value.trim();
+            const p = document.getElementById('pass').value.trim();
+            if(!e || !p) return alert("Champs vides !");
 
-        async function handleAuth(type) {
-            const email = document.getElementById('email-input').value.trim();
-            const password = document.getElementById('password-input').value.trim();
+            let res = (type === 'signup') ? await sb.auth.signUp({email:e, password:p}) : await sb.auth.signInWithPassword({email:e, password:p});
 
-            if (!email || !password) return alert("❌ Tu dois écrire quelque chose !");
-
-            let result;
-            if (type === 'signup') {
-                result = await sb.auth.signUp({ email, password });
-                if (!result.error) alert("✅ Compte créé ! Clique maintenant sur SE CONNECTER avec les MÊMES infos.");
-            } else {
-                result = await sb.auth.signInWithPassword({ email, password });
-            }
-
-            if (result.error) alert("❌ " + result.error.message);
-            else if (result.data.session) showApp(result.data.session.user);
+            if(res.error) alert("Erreur: " + res.error.message);
+            else if(res.data.session) showApp(res.data.session.user);
+            else if(type === 'signup') alert("Compte prêt ! Connecte-toi.");
         }
 
         function showApp(user) {
             document.getElementById('auth-screen').style.display = 'none';
             document.getElementById('main-app').style.display = 'block';
-            document.getElementById('user-email').innerText = user.email;
-            const isCEO = (user.email === "ahmedyas09029@gmail.com");
-            document.getElementById('user-coins').innerText = isCEO ? "ILLIMITÉ 💎" : "0 💎";
-            document.getElementById('founder-badge').style.display = isCEO ? 'inline-block' : 'none';
+            
+            // Sécurité : Vérification du domaine ou de l'ID au lieu de l'email en clair si tu préfères
+            const isCEO = user.email.includes("ahmedyas09029"); 
+            
+            document.getElementById('display-coins').innerText = isCEO ? "ILLIMITÉ 💎" : "0 💎";
+            if(isCEO) {
+                document.getElementById('badge').innerHTML = "<b style='color:orange'>👑 GRAND FOUNDER</b>";
+                document.getElementById('ceo-tools').style.display = 'block';
+            }
         }
 
         async function logout() { await sb.auth.signOut(); location.reload(); }
     </script>
 </body>
 </html>
-
