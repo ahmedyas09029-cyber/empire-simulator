@@ -6,43 +6,63 @@
     <title>KORELI NETWORK</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        :root { --accent: #a855f7; --bg: #050505; --card: #121212; --text: #f0f0f0; --coin: #FFD700; }
-        body { background: var(--bg); color: var(--text); font-family: sans-serif; margin: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
-        .content { flex: 1; padding: 20px; text-align: center; overflow-y: auto; }
-        .card { background: var(--card); padding: 25px; border-radius: 20px; border: 1px solid #222; margin-bottom: 20px; }
-        input { width: 100%; background: #000; border: 1px solid #333; color: white; padding: 15px; border-radius: 12px; margin: 10px 0; box-sizing: border-box; }
-        .btn { width: 100%; padding: 16px; border-radius: 12px; border: none; font-weight: bold; cursor: pointer; margin-top: 10px; }
-        .btn-primary { background: white; color: black; }
-        .btn-secondary { background: transparent; color: var(--accent); border: 1px solid var(--accent); }
+        :root { --accent: #a855f7; --bg: #050505; --card: #121212; --text: #f0f0f0; --coin: #FFD700; --founder: linear-gradient(135deg, #FFD700, #ff8800); }
+        body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; margin: 0; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+        .header { padding: 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #222; background: rgba(5,5,5,0.8); backdrop-filter: blur(10px); }
+        .logo { font-weight: 900; font-size: 1.2rem; letter-spacing: 2px; color: white; }
+        .content { flex: 1; overflow-y: auto; padding: 20px; text-align: center; }
+        .card { background: var(--card); padding: 25px; border-radius: 24px; border: 1px solid #222; margin-bottom: 20px; }
+        input { width: 100%; background: #000; border: 1px solid #333; color: white; padding: 15px; border-radius: 16px; margin: 8px 0; box-sizing: border-box; font-size: 1rem; }
+        .btn { width: 100%; padding: 16px; border-radius: 16px; border: none; font-weight: 800; cursor: pointer; font-size: 1rem; transition: 0.3s; margin-top: 10px; }
+        .btn-auth { background: white; color: black; }
+        .btn-signup { background: transparent; color: var(--accent); border: 1px solid var(--accent); }
+        .btn-gift { background: var(--founder); color: black; }
+        .badge-founder { background: var(--founder); color: black; padding: 8px 20px; border-radius: 50px; display: inline-block; font-weight: 900; font-size: 0.7rem; margin-bottom: 15px; }
     </style>
 </head>
 <body onload="init()">
 
+    <div class="header">
+        <div class="logo">KORELI NETWORK</div>
+        <div id="statut-top" style="font-size: 0.8rem; color: #00ff88;">● SYSTÈME ACTIF</div>
+    </div>
+
     <div id="auth-screen" style="display:none;" class="content">
-        <h1 style="margin-top:50px;">👑 Accès Koreli</h1>
+        <div style="font-size: 4rem; margin-top: 40px;">🔑</div>
+        <h1>Accès Impérial</h1>
+        <p style="color:#666; margin-bottom:30px;">Identifiez-vous pour gérer votre empire.</p>
+        
         <div class="card">
-            <input type="email" id="email" placeholder="Email">
-            <input type="password" id="pass" placeholder="Mot de passe (min. 6 car.)">
-            <button class="btn btn-primary" onclick="auth('login')">ENTRER DANS L'EMPIRE</button>
-            <button class="btn btn-secondary" onclick="auth('signup')">CRÉER UN COMPTE</button>
+            <input type="email" id="email" placeholder="Votre Email">
+            <input type="password" id="pass" placeholder="Votre Mot de passe">
+            <button class="btn btn-auth" onclick="auth('login')">SE CONNECTER</button>
+            <button class="btn btn-signup" onclick="auth('signup')">CRÉER MON COMPTE</button>
         </div>
+        <p style="font-size: 0.7rem; color: #444;">Note : La confirmation mail doit être OFF dans Supabase</p>
     </div>
 
     <div id="main-app" style="display:none;" class="content">
         <div class="card">
-            <div id="badge"></div>
-            <h2 id="display-coins" style="color:var(--coin); font-size: 2.5rem;">0 💎</h2>
+            <div id="badge-area"></div>
+            <div id="user-email-display" style="font-size:0.8rem; color:#888; margin-bottom:10px;"></div>
+            <div style="font-size:3rem; font-weight:900; color:var(--coin);" id="user-coins">0 💎</div>
+            <div style="color:#00ff88; font-weight:bold; margin-top:5px;">VALEUR : <span id="user-val">0.00 €</span></div>
         </div>
-        <div id="ceo-tools" style="display:none;" class="card">
-            <h3 style="color:var(--coin);">🏦 TRÉSORERIE DU FOUNDER</h3>
-            <input type="text" id="target" placeholder="Pseudo du destinataire">
-            <button class="btn" style="background:var(--coin); color:black;" onclick="alert('K-Coins générés !')">GÉNÉRER K-COINS</button>
+
+        <div id="ceo-panel" style="display:none;" class="card">
+            <h3 style="color:var(--coin); margin-top:0;">🏦 TRÉSORERIE DU FOUNDER</h3>
+            <input type="text" id="target" placeholder="ID du citoyen">
+            <input type="number" id="amt" placeholder="Montant en 💎">
+            <button class="btn btn-gift" onclick="processGift()">GÉNÉRER LES K-COINS</button>
         </div>
-        <button onclick="logout()" style="color:red; background:none; border:none; cursor:pointer; margin-top: 20px;">Déconnexion</button>
+
+        <button onclick="logout()" style="background:none; border:none; color:#ff4444; font-weight:bold; cursor:pointer; width:100%; margin-top:20px;">🚪 Quitter le Cloud</button>
     </div>
 
     <script>
-        const sb = supabase.createClient("https://ebykrodcycqcpcfuqpzi.supabase.co", "sb_publishable_j_DNfP9D_2K3uAzbb6-Giw_cWJJfR8_");
+        const PROJECT_URL = "https://ebykrodcycqcpcfuqpzi.supabase.co"; 
+        const PUBLIC_KEY = "sb_publishable_j_DNfP9D_2K3uAzbb6-Giw_cWJJfR8_";
+        const sb = supabase.createClient(PROJECT_URL, PUBLIC_KEY);
 
         async function init() {
             const { data: { session } } = await sb.auth.getSession();
@@ -53,22 +73,23 @@
         async function auth(type) {
             const e = document.getElementById('email').value.trim();
             const p = document.getElementById('pass').value.trim();
-            if(!e || !p) return alert("❌ Remplis les cases !");
+
+            if(!e || !p) return alert("❌ CEO, remplis les deux cases !");
 
             let res;
             if(type === 'signup') {
                 res = await sb.auth.signUp({email: e, password: p});
-                if(!res.error) {
-                    alert("✅ Compte créé ! Tentative de connexion automatique...");
-                    auth('login'); // On tente de connecter direct
-                }
+                if(!res.error) alert("✅ Compte créé ! Connecte-toi maintenant.");
             } else {
                 res = await sb.auth.signInWithPassword({email: e, password: p});
             }
 
             if(res.error) {
-                if(res.error.message.includes("confirm")) alert("❌ Erreur : Tu dois désactiver 'Confirm Email' dans Supabase.");
-                else alert("❌ Erreur : " + res.error.message);
+                if(res.error.message.includes("confirm")) {
+                    alert("⚠️ BLOQUÉ : Tu as oublié de mettre 'Confirm email' sur OFF et de cliquer sur SAVE !");
+                } else {
+                    alert("❌ Erreur : " + res.error.message);
+                }
             } else if(res.data.session) {
                 showApp(res.data.session.user);
             }
@@ -77,19 +98,27 @@
         function showApp(user) {
             document.getElementById('auth-screen').style.display = 'none';
             document.getElementById('main-app').style.display = 'block';
+            document.getElementById('user-email-display').innerText = user.email;
+
+            // RECONNAISSANCE DU MAÎTRE
+            const isCEO = user.email.includes("ahmedyas09029");
             
-            // On vérifie si c'est toi par une partie de ton email pour la sécurité
-            const isCEO = user.email.includes("ahmedyas09029"); 
-            
-            document.getElementById('display-coins').innerText = isCEO ? "ILLIMITÉ 💎" : "0 💎";
+            document.getElementById('user-coins').innerText = isCEO ? "ILLIMITÉ 💎" : "0 💎";
+            document.getElementById('user-val').innerText = isCEO ? "INFINIE" : "0.00 €";
+
             if(isCEO) {
-                document.getElementById('badge').innerHTML = "<b style='color:orange; font-size:1.2rem;'>👑 GRAND FOUNDER</b><br><small style='color:#888'>"+user.email+"</small>";
-                document.getElementById('ceo-tools').style.display = 'block';
+                document.getElementById('badge-area').innerHTML = '<div class="badge-founder">👑 GRAND FOUNDER</div>';
+                document.getElementById('ceo-panel').style.display = 'block';
             }
+        }
+
+        function processGift() {
+            const target = document.getElementById('target').value;
+            const amount = document.getElementById('amt').value;
+            if(target && amount) alert(`💰 ORDRE DU FOUNDER : ${amount} K-Coins injectés pour ${target}.`);
         }
 
         async function logout() { await sb.auth.signOut(); location.reload(); }
     </script>
 </body>
 </html>
-
