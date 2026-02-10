@@ -1,142 +1,79 @@
-/*****************************************************************
- KORELI CORE SYSTEM — Brain + Muscles
- Stack: Next.js 14 + Supabase + Edge Functions + IA
-******************************************************************/
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Koreli Network</title>
 
-/* ===================== SUPABASE SCHEMA ===================== */
+  <!-- Supabase -->
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 
--- USERS
-create table profiles (
-  id uuid primary key references auth.users on delete cascade,
-  username text unique,
-  role text default 'citoyen', -- citoyen | elite | empereur
-  influence int default 0,
-  coins bigint default 100,
-  created_at timestamp default now()
-);
+  <style>
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system;
+      background: radial-gradient(circle at top, #1a1a1a, #000);
+      color: white;
+    }
+    .card {
+      background: rgba(255,255,255,0.08);
+      border-radius: 16px;
+      padding: 20px;
+      margin: 16px;
+      backdrop-filter: blur(20px);
+      box-shadow: 0 0 30px rgba(255,215,0,0.1);
+    }
+    button {
+      width: 100%;
+      padding: 14px;
+      border-radius: 12px;
+      border: none;
+      background: linear-gradient(135deg,#7f00ff,#ffd700);
+      color: black;
+      font-weight: bold;
+      font-size: 16px;
+    }
+  </style>
+</head>
 
--- MEMORY (IA)
-create table ai_memory (
-  id bigint generated always as identity,
-  user_id uuid references profiles(id),
-  content text,
-  created_at timestamp default now()
-);
+<body>
 
--- SOCIAL
-create table posts (
-  id bigint generated always as identity,
-  user_id uuid references profiles(id),
-  content text,
-  influence_gain int default 1,
-  created_at timestamp default now()
-);
+  <div class="card">
+    <h1>🌌 KORELI</h1>
+    <p>Réseau privé intelligent</p>
+    <button onclick="login()">Connexion</button>
+  </div>
 
--- MARKETPLACE
-create table marketplace (
-  id bigint generated always as identity,
-  title text,
-  price bigint,
-  seller uuid references profiles(id),
-  created_at timestamp default now()
-);
+  <div class="card" id="dash" style="display:none">
+    <h2>👑 Dashboard</h2>
+    <p id="email"></p>
+    <p>💎 Coins: <span id="coins">0</span></p>
+  </div>
 
--- SECURITY (RLS)
-alter table profiles enable row level security;
-create policy "Users read own profile"
-on profiles for select
-using (auth.uid() = id);
+  <script>
+    const supabase = supabase.createClient(
+      "https://ebykrodcycqcpcfuqpzi.supabase.co",
+      "sb_publishable_j_DNfP9D_2K3uAzbb6-Giw_cWJJfR8"
+    );
 
+    async function login() {
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: "google"
+      });
+      if (error) alert(error.message);
+    }
 
-/* ===================== EDGE FUNCTION (AI BRAIN) ===================== */
-// supabase/functions/koreli-ai/index.ts
-import OpenAI from "openai";
-
-const openai = new OpenAI({ apiKey: Deno.env.get("OPENAI_KEY") });
-
-Deno.serve(async (req) => {
-  const { user_id, message } = await req.json();
-
-  // Save memory
-  await fetch(`${Deno.env.get("SUPABASE_URL")}/rest/v1/ai_memory`, {
-    method: "POST",
-    headers: {
-      "apikey": Deno.env.get("SUPABASE_ANON_KEY"),
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({ user_id, content: message })
-  });
-
-  const completion = await openai.chat.completions.create({
-    model: "gpt-4o-mini",
-    messages: [{ role: "user", content: message }]
-  });
-
-  return new Response(JSON.stringify({
-    reply: completion.choices[0].message.content
-  }), { headers: { "Content-Type": "application/json" } });
-});
-
-
-/* ===================== NEXT.JS FRONTEND ===================== */
-// app/dashboard/page.tsx
-"use client";
-import { createClient } from "@supabase/supabase-js";
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
-
-export default function Dashboard() {
-  const sendToAI = async () => {
-    await fetch("/functions/v1/koreli-ai", {
-      method: "POST",
-      body: JSON.stringify({
-        user_id: "current-user",
-        message: "Analyse mon influence"
-      })
+    supabase.auth.onAuthStateChange((event, session) => {
+      if (session) {
+        document.querySelector("button").style.display = "none";
+        document.getElementById("dash").style.display = "block";
+        document.getElementById("email").innerText = session.user.email;
+        document.getElementById("coins").innerText = 100;
+      }
     });
-  };
+  </script>
 
-  return (
-    <main className="min-h-screen bg-black text-white p-6">
-      <h1 className="text-4xl font-bold text-gold">KORELI NETWORK</h1>
-      <button
-        onClick={sendToAI}
-        className="mt-6 px-6 py-3 bg-gradient-to-r from-purple-600 to-yellow-500 rounded-xl"
-      >
-        🤖 Parler à K-AI
-      </button>
-    </main>
-  );
-}
-
-
-/* ===================== INFLUENCE SYSTEM ===================== */
-create or replace function gain_influence()
-returns trigger as $$
-begin
-  update profiles
-  set influence = influence + NEW.influence_gain
-  where id = NEW.user_id;
-  return NEW;
-end;
-$$ language plpgsql;
-
-create trigger influence_trigger
-after insert on posts
-for each row execute procedure gain_influence();
-
-
-/* ===================== ROLE EVOLUTION ===================== */
-update profiles
-set role =
-  case
-    when influence > 1000 then 'empereur'
-    when influence > 300 then 'elite'
-    else 'citoyen'
-  end;
-
+</body>
+</html>
 
 
