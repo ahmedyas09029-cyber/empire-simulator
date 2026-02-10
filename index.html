@@ -1,118 +1,142 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>KORELI NETWORK</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <style>
-        :root { --accent: #a855f7; --bg: #050505; --card: #121212; --text: #f0f0f0; --coin: #FFD700; --founder: linear-gradient(135deg, #FFD700, #ff8800); }
-        body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; margin: 0; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
-        .header { padding: 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #222; background: rgba(5,5,5,0.8); backdrop-filter: blur(10px); }
-        .logo { font-weight: 900; font-size: 1.2rem; letter-spacing: 2px; color: white; }
-        .content { flex: 1; overflow-y: auto; padding: 20px; text-align: center; }
-        .card { background: var(--card); padding: 25px; border-radius: 24px; border: 1px solid #222; margin-bottom: 20px; }
-        input { width: 100%; background: #000; border: 1px solid #333; color: white; padding: 15px; border-radius: 16px; margin: 8px 0; box-sizing: border-box; font-size: 1rem; }
-        .btn { width: 100%; padding: 16px; border-radius: 16px; border: none; font-weight: 800; cursor: pointer; font-size: 1rem; transition: 0.3s; margin-top: 10px; }
-        .btn-auth { background: white; color: black; }
-        .btn-signup { background: transparent; color: var(--accent); border: 1px solid var(--accent); }
-        .btn-gift { background: var(--founder); color: black; }
-        .badge-founder { background: var(--founder); color: black; padding: 8px 20px; border-radius: 50px; display: inline-block; font-weight: 900; font-size: 0.7rem; margin-bottom: 15px; }
-    </style>
-</head>
-<body onload="init()">
+/*****************************************************************
+ KORELI CORE SYSTEM — Brain + Muscles
+ Stack: Next.js 14 + Supabase + Edge Functions + IA
+******************************************************************/
 
-    <div class="header">
-        <div class="logo">KORELI NETWORK</div>
-        <div id="statut-top" style="font-size: 0.8rem; color: #00ff88;">● SYSTÈME CONNECTÉ</div>
-    </div>
+/* ===================== SUPABASE SCHEMA ===================== */
 
-    <div id="auth-screen" style="display:none;" class="content">
-        <div style="font-size: 4rem; margin-top: 40px;">🔑</div>
-        <h1>Accès Impérial</h1>
-        <div class="card">
-            <input type="email" id="email" placeholder="Votre Email">
-            <input type="password" id="pass" placeholder="Votre Mot de passe">
-            <button class="btn btn-auth" onclick="auth('login')">SE CONNECTER</button>
-            <button class="btn btn-signup" onclick="auth('signup')">REJOINDRE L'EMPIRE</button>
-        </div>
-    </div>
+-- USERS
+create table profiles (
+  id uuid primary key references auth.users on delete cascade,
+  username text unique,
+  role text default 'citoyen', -- citoyen | elite | empereur
+  influence int default 0,
+  coins bigint default 100,
+  created_at timestamp default now()
+);
 
-    <div id="main-app" style="display:none;" class="content">
-        <div class="card">
-            <div id="badge-area"></div>
-            <div id="user-email-display" style="font-size:0.8rem; color:#888; margin-bottom:10px;"></div>
-            <div style="font-size:3rem; font-weight:900; color:var(--coin);" id="user-coins">0 💎</div>
-            <div style="color:#00ff88; font-weight:bold; margin-top:5px;">VALEUR RÉELLE : <span id="user-val">0.00 €</span></div>
-        </div>
+-- MEMORY (IA)
+create table ai_memory (
+  id bigint generated always as identity,
+  user_id uuid references profiles(id),
+  content text,
+  created_at timestamp default now()
+);
 
-        <div id="ceo-panel" style="display:none;" class="card">
-            <h3 style="color:var(--coin); margin-top:0;">🏦 TRÉSORERIE DU FOUNDER</h3>
-            <input type="text" id="target" placeholder="ID du citoyen">
-            <input type="number" id="amt" placeholder="Montant en 💎">
-            <button class="btn btn-gift" onclick="processGift()">GÉNÉRER LES K-COINS</button>
-        </div>
+-- SOCIAL
+create table posts (
+  id bigint generated always as identity,
+  user_id uuid references profiles(id),
+  content text,
+  influence_gain int default 1,
+  created_at timestamp default now()
+);
 
-        <button onclick="logout()" style="background:none; border:none; color:#ff4444; font-weight:bold; cursor:pointer; width:100%; margin-top:20px;">🚪 Quitter le Cloud</button>
-    </div>
+-- MARKETPLACE
+create table marketplace (
+  id bigint generated always as identity,
+  title text,
+  price bigint,
+  seller uuid references profiles(id),
+  created_at timestamp default now()
+);
 
-    <script>
-        // Configuration
-        const PROJECT_URL = "https://ebykrodcycqcpcfuqpzi.supabase.co"; 
-        const PUBLIC_KEY = "sb_publishable_j_DNfP9D_2K3uAzbb6-Giw_cWJJfR8_";
-        const sb = supabase.createClient(PROJECT_URL, PUBLIC_KEY);
+-- SECURITY (RLS)
+alter table profiles enable row level security;
+create policy "Users read own profile"
+on profiles for select
+using (auth.uid() = id);
 
-        async function init() {
-            const { data: { session } } = await sb.auth.getSession();
-            if (session) showApp(session.user);
-            else document.getElementById('auth-screen').style.display = 'block';
-        }
 
-        async function auth(type) {
-            const e = document.getElementById('email').value.trim();
-            const p = document.getElementById('pass').value.trim();
-            if(!e || !p) return alert("❌ CEO, remplis les deux cases !");
-            let res = (type === 'signup') ? await sb.auth.signUp({email: e, password: p}) : await sb.auth.signInWithPassword({email: e, password: p});
-            if(res.error) alert("❌ " + res.error.message);
-            else if(res.data.session) showApp(res.data.session.user);
-        }
+/* ===================== EDGE FUNCTION (AI BRAIN) ===================== */
+// supabase/functions/koreli-ai/index.ts
+import OpenAI from "openai";
 
-        async function showApp(user) {
-            document.getElementById('auth-screen').style.display = 'none';
-            document.getElementById('main-app').style.display = 'block';
-            document.getElementById('user-email-display').innerText = user.email;
+const openai = new OpenAI({ apiKey: Deno.env.get("OPENAI_KEY") });
 
-            const isCEO = user.email.includes("ahmedyas09029");
+Deno.serve(async (req) => {
+  const { user_id, message } = await req.json();
 
-            // Lecture des données dans la table profiles
-            const { data, error } = await sb
-                .from('profiles')
-                .select('coins')
-                .eq('id', user.id)
-                .single();
+  // Save memory
+  await fetch(`${Deno.env.get("SUPABASE_URL")}/rest/v1/ai_memory`, {
+    method: "POST",
+    headers: {
+      "apikey": Deno.env.get("SUPABASE_ANON_KEY"),
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ user_id, content: message })
+  });
 
-            if (data) {
-                document.getElementById('user-coins').innerText = data.coins + " 💎";
-                document.getElementById('user-val').innerText = (data.coins * 0.01).toFixed(2) + " €";
-            }
+  const completion = await openai.chat.completions.create({
+    model: "gpt-4o-mini",
+    messages: [{ role: "user", content: message }]
+  });
 
-            if(isCEO) {
-                document.getElementById('badge-area').innerHTML = '<div class="badge-founder">👑 GRAND FOUNDER</div>';
-                document.getElementById('ceo-panel').style.display = 'block';
-            }
-        }
+  return new Response(JSON.stringify({
+    reply: completion.choices[0].message.content
+  }), { headers: { "Content-Type": "application/json" } });
+});
 
-        async function processGift() {
-            const target = document.getElementById('target').value;
-            const amount = document.getElementById('amt').value;
-            if(!target || !amount) return alert("❌ Infos manquantes !");
-            
-            const { error } = await sb.from('profiles').update({ coins: amount }).eq('id', target);
-            if(error) alert("Erreur SQL : " + error.message);
-            else alert("✅ K-Coins injectés !");
-        }
 
-        async function logout() { await sb.auth.signOut(); location.reload(); }
-    </script>
-</body>
-</html>
+/* ===================== NEXT.JS FRONTEND ===================== */
+// app/dashboard/page.tsx
+"use client";
+import { createClient } from "@supabase/supabase-js";
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
+
+export default function Dashboard() {
+  const sendToAI = async () => {
+    await fetch("/functions/v1/koreli-ai", {
+      method: "POST",
+      body: JSON.stringify({
+        user_id: "current-user",
+        message: "Analyse mon influence"
+      })
+    });
+  };
+
+  return (
+    <main className="min-h-screen bg-black text-white p-6">
+      <h1 className="text-4xl font-bold text-gold">KORELI NETWORK</h1>
+      <button
+        onClick={sendToAI}
+        className="mt-6 px-6 py-3 bg-gradient-to-r from-purple-600 to-yellow-500 rounded-xl"
+      >
+        🤖 Parler à K-AI
+      </button>
+    </main>
+  );
+}
+
+
+/* ===================== INFLUENCE SYSTEM ===================== */
+create or replace function gain_influence()
+returns trigger as $$
+begin
+  update profiles
+  set influence = influence + NEW.influence_gain
+  where id = NEW.user_id;
+  return NEW;
+end;
+$$ language plpgsql;
+
+create trigger influence_trigger
+after insert on posts
+for each row execute procedure gain_influence();
+
+
+/* ===================== ROLE EVOLUTION ===================== */
+update profiles
+set role =
+  case
+    when influence > 1000 then 'empereur'
+    when influence > 300 then 'elite'
+    else 'citoyen'
+  end;
+
+
+
