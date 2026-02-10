@@ -24,21 +24,18 @@
 
     <div class="header">
         <div class="logo">KORELI NETWORK</div>
-        <div id="statut-top" style="font-size: 0.8rem; color: #00ff88;">● SYSTÈME ACTIF</div>
+        <div id="statut-top" style="font-size: 0.8rem; color: #00ff88;">● SYSTÈME CONNECTÉ</div>
     </div>
 
     <div id="auth-screen" style="display:none;" class="content">
         <div style="font-size: 4rem; margin-top: 40px;">🔑</div>
         <h1>Accès Impérial</h1>
-        <p style="color:#666; margin-bottom:30px;">Identifiez-vous pour gérer votre empire.</p>
-        
         <div class="card">
             <input type="email" id="email" placeholder="Votre Email">
             <input type="password" id="pass" placeholder="Votre Mot de passe">
             <button class="btn btn-auth" onclick="auth('login')">SE CONNECTER</button>
-            <button class="btn btn-signup" onclick="auth('signup')">CRÉER MON COMPTE</button>
+            <button class="btn btn-signup" onclick="auth('signup')">REJOINDRE L'EMPIRE</button>
         </div>
-        <p style="font-size: 0.7rem; color: #444;">Note : La confirmation mail doit être OFF dans Supabase</p>
     </div>
 
     <div id="main-app" style="display:none;" class="content">
@@ -46,7 +43,7 @@
             <div id="badge-area"></div>
             <div id="user-email-display" style="font-size:0.8rem; color:#888; margin-bottom:10px;"></div>
             <div style="font-size:3rem; font-weight:900; color:var(--coin);" id="user-coins">0 💎</div>
-            <div style="color:#00ff88; font-weight:bold; margin-top:5px;">VALEUR : <span id="user-val">0.00 €</span></div>
+            <div style="color:#00ff88; font-weight:bold; margin-top:5px;">VALEUR RÉELLE : <span id="user-val">0.00 €</span></div>
         </div>
 
         <div id="ceo-panel" style="display:none;" class="card">
@@ -60,6 +57,7 @@
     </div>
 
     <script>
+        // Configuration
         const PROJECT_URL = "https://ebykrodcycqcpcfuqpzi.supabase.co"; 
         const PUBLIC_KEY = "sb_publishable_j_DNfP9D_2K3uAzbb6-Giw_cWJJfR8_";
         const sb = supabase.createClient(PROJECT_URL, PUBLIC_KEY);
@@ -73,38 +71,30 @@
         async function auth(type) {
             const e = document.getElementById('email').value.trim();
             const p = document.getElementById('pass').value.trim();
-
             if(!e || !p) return alert("❌ CEO, remplis les deux cases !");
-
-            let res;
-            if(type === 'signup') {
-                res = await sb.auth.signUp({email: e, password: p});
-                if(!res.error) alert("✅ Compte créé ! Connecte-toi maintenant.");
-            } else {
-                res = await sb.auth.signInWithPassword({email: e, password: p});
-            }
-
-            if(res.error) {
-                if(res.error.message.includes("confirm")) {
-                    alert("⚠️ BLOQUÉ : Tu as oublié de mettre 'Confirm email' sur OFF et de cliquer sur SAVE !");
-                } else {
-                    alert("❌ Erreur : " + res.error.message);
-                }
-            } else if(res.data.session) {
-                showApp(res.data.session.user);
-            }
+            let res = (type === 'signup') ? await sb.auth.signUp({email: e, password: p}) : await sb.auth.signInWithPassword({email: e, password: p});
+            if(res.error) alert("❌ " + res.error.message);
+            else if(res.data.session) showApp(res.data.session.user);
         }
 
-        function showApp(user) {
+        async function showApp(user) {
             document.getElementById('auth-screen').style.display = 'none';
             document.getElementById('main-app').style.display = 'block';
             document.getElementById('user-email-display').innerText = user.email;
 
-            // RECONNAISSANCE DU MAÎTRE
             const isCEO = user.email.includes("ahmedyas09029");
-            
-            document.getElementById('user-coins').innerText = isCEO ? "ILLIMITÉ 💎" : "0 💎";
-            document.getElementById('user-val').innerText = isCEO ? "INFINIE" : "0.00 €";
+
+            // Lecture des données dans la table profiles
+            const { data, error } = await sb
+                .from('profiles')
+                .select('coins')
+                .eq('id', user.id)
+                .single();
+
+            if (data) {
+                document.getElementById('user-coins').innerText = data.coins + " 💎";
+                document.getElementById('user-val').innerText = (data.coins * 0.01).toFixed(2) + " €";
+            }
 
             if(isCEO) {
                 document.getElementById('badge-area').innerHTML = '<div class="badge-founder">👑 GRAND FOUNDER</div>';
@@ -112,10 +102,14 @@
             }
         }
 
-        function processGift() {
+        async function processGift() {
             const target = document.getElementById('target').value;
             const amount = document.getElementById('amt').value;
-            if(target && amount) alert(`💰 ORDRE DU FOUNDER : ${amount} K-Coins injectés pour ${target}.`);
+            if(!target || !amount) return alert("❌ Infos manquantes !");
+            
+            const { error } = await sb.from('profiles').update({ coins: amount }).eq('id', target);
+            if(error) alert("Erreur SQL : " + error.message);
+            else alert("✅ K-Coins injectés !");
         }
 
         async function logout() { await sb.auth.signOut(); location.reload(); }
