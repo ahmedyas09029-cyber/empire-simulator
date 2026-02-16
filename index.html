@@ -1,4 +1,4 @@
-       <!DOCTYPE html>
+      <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
@@ -10,61 +10,123 @@
         :root { --gold: linear-gradient(135deg, #FFD700, #B8860B); --bg: #000; --glass: rgba(255,255,255,.06); --border: rgba(255,255,255,.15); }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { margin: 0; font-family: 'Inter', sans-serif; background: #000; color: #fff; height: 100vh; overflow: hidden; }
-        
         header { padding: 20px; text-align: center; border-bottom: 1px solid var(--border); font-family: 'Syncopate'; letter-spacing: 3px; background: rgba(0,0,0,0.8); backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 100; }
-        
         .content { padding: 20px; height: calc(100vh - 75px); overflow-y: auto; scroll-behavior: smooth; }
         .card { background: var(--glass); border: 1px solid var(--border); border-radius: 25px; padding: 22px; margin-bottom: 20px; }
-        
         .btn-gold { background: var(--gold); color: #000; border: none; padding: 16px; border-radius: 18px; width: 100%; font-weight: 900; cursor: pointer; text-transform: uppercase; font-size: 0.9rem; }
         .btn-outline { background: var(--glass); color: #fff; border: 1px solid var(--border); padding: 12px; border-radius: 15px; width: 100%; font-weight: bold; cursor: pointer; }
-        
         .grid-menu { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
-        
         input, textarea { width: 100%; padding: 15px; border-radius: 15px; background: rgba(255,255,255,0.08); border: 1px solid var(--border); color: #fff; margin: 8px 0; font-size: 1rem; }
-        
-        /* Liste des messages du réseau */
-        .post { background: rgba(255,255,255,0.04); padding: 18px; border-radius: 20px; margin-bottom: 12px; border-left: 4px solid #FFD700; animation: slideIn 0.3s ease; }
-        @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        
-        /* Chat IA */
-        #chat-box { height: 200px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
-        .msg-user { align-self: flex-end; background: #333; padding: 10px 15px; border-radius: 15px 15px 0 15px; font-size: 0.85rem; max-width: 80%; }
-        .msg-ai { align-self: flex-start; background: var(--gold); color: #000; padding: 10px 15px; border-radius: 15px 15px 15px 0; font-size: 0.85rem; max-width: 80%; font-weight: bold; }
-
+        .post { background: rgba(255,255,255,0.04); padding: 18px; border-radius: 20px; margin-bottom: 12px; border-left: 4px solid #FFD700; }
+        #chat-box { height: 200px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px; border-bottom: 1px solid var(--border); }
+        .msg-user { align-self: flex-end; background: #333; padding: 10px 15px; border-radius: 15px 15px 0 15px; font-size: 0.85rem; }
+        .msg-ai { align-self: flex-start; background: var(--gold); color: #000; padding: 10px 15px; border-radius: 15px 15px 15px 0; font-size: 0.85rem; font-weight: bold; }
         .status-live { font-size: 0.65rem; color: #00ff88; letter-spacing: 1px; font-weight: bold; display: flex; align-items: center; gap: 5px; }
         .dot { height: 6px; width: 6px; background-color: #00ff88; border-radius: 50%; display: inline-block; animation: blink 1s infinite; }
         @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
     </style>
 </head>
 <body onload="Core.init()">
-
-<header>KORELI DOMINION</header>
-
-<div id="auth-screen" style="display:none;" class="content">
-    <div class="card" style="margin-top: 40px;">
-        <h2 style="text-align:center; font-family: 'Syncopate'; font-size: 0.8rem; color: #FFD700;">ACCÈS IMPÉRIAL</h2>
-        <p style="text-align:center; font-size: 0.7rem; color: #888;">Entrez vos identifiants de citoyen</p>
-        <input type="email" id="email" placeholder="Email">
-        <input type="password" id="pass" placeholder="Mot de passe">
-        <button class="btn-gold" onclick="Auth.login()">SE CONNECTER</button>
+    <header>KORELI DOMINION</header>
+    <div id="auth-screen" style="display:none;" class="content">
+        <div class="card" style="margin-top: 40px;">
+            <h2 style="text-align:center; font-family: 'Syncopate'; font-size: 0.8rem; color: #FFD700;">ACCÈS IMPÉRIAL</h2>
+            <input type="email" id="email" placeholder="Email">
+            <input type="password" id="pass" placeholder="Mot de passe">
+            <button class="btn-gold" onclick="Auth.login()">SE CONNECTER</button>
+        </div>
     </div>
-</div>
-
-<div id="app" style="display:none;" class="content">
-    
-    <div class="card">
-        <div class="status-live"><span class="dot"></span> SYNC TEMPS RÉEL ACTIVE</div>
-        <div id="role-display" style="color:#FFD700; font-weight:900; font-size: 0.75rem; margin-top:10px; text-transform: uppercase;">Citoyen</div>
-        <div id="coins-display" style="font-size: 3.5rem; font-weight: 900; background: var(--gold); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin: 5px 0;">0 💎</div>
-        <div id="influence-display" style="color:#00ff88; font-weight:bold; font-size: 0.9rem;">Influence : 0</div>
-        <div style="font-size: 0.6rem; color: #555; margin-top: 10px;" id="user-id-tag">ID: ...</div>
+    <div id="app" style="display:none;" class="content">
+        <div class="card">
+            <div class="status-live"><span class="dot"></span> SYNC TEMPS RÉEL ACTIVE</div>
+            <div id="role-display" style="color:#FFD700; font-weight:900; font-size: 0.75rem; margin-top:10px;">Citoyen</div>
+            <div id="coins-display" style="font-size: 3.5rem; font-weight: 900; background: var(--gold); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">0 💎</div>
+            <div id="user-id-tag" style="font-size: 0.6rem; color: #555;">ID: ...</div>
+        </div>
+        <div class="grid-menu">
+            <button class="btn-outline" onclick="UI.switch('ai-mod')">🤖 K-IA</button>
+            <button class="btn-outline" onclick="UI.switch('soc-mod')">🌍 RÉSEAU</button>
+        </div>
+        <div id="ai-mod" class="card" hidden>
+            <h3>MÉMOIRE IA</h3>
+            <div id="chat-box"></div>
+            <input id="aiIn" placeholder="Commande...">
+            <button class="btn-gold" onclick="AI.ask()">ANALYSER</button>
+        </div>
+        <div id="soc-mod" class="card" hidden>
+            <h3>FLUX GLOBAL</h3>
+            <textarea id="postIn" placeholder="Quoi de neuf ?"></textarea>
+            <button class="btn-gold" onclick="Social.post()">PUBLIER</button>
+            <div id="feed" style="margin-top: 20px;"></div>
+        </div>
+        <div id="ceo-mod" class="card" style="display:none; border: 1px solid #FFD700;">
+            <h3 style="color:#FFD700;">👑 BANQUE CENTRALE</h3>
+            <input id="target-id" placeholder="ID Citoyen">
+            <input id="amount-to-gift" type="number" placeholder="Montant">
+            <button class="btn-gold" onclick="CEO.gift()">INJECTER</button>
+        </div>
+        <button onclick="Auth.logout()" style="color:red; background:none; border:none; width:100%; padding:20px;">DÉCONNEXION</button>
     </div>
-
-    <div class="grid-menu">
-        <button class="btn-outline" onclick="UI.switch('ai-mod')">🤖 K-IA</button>
-        <button class="btn-outline" onclick="UI.switch('soc-mod')">🌍 RÉSEAU</button>
-    </div>
-
-    <div id="ai-mod" class="card" hidden>
-        <h3 style="font-size: 0.9rem; margin-top: 0;">MÉM
+    <script>
+        const SUPABASE_URL = "https://ebykrodcycqcpcfuqpzi.supabase.co";
+        const SUPABASE_KEY = "sb_publishable_j_DNfP9D_2K3uAzbb6-Giw_cWJJfR8_";
+        const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        let USER = null;
+        const Core = {
+            async init() {
+                const { data: { session } } = await sb.auth.getSession();
+                if (session) {
+                    USER = session.user;
+                    document.getElementById('app').style.display = 'block';
+                    document.getElementById('user-id-tag').innerText = "ID: " + USER.id;
+                    this.syncData();
+                    this.setupRealtime();
+                } else { document.getElementById('auth-screen').style.display = 'block'; }
+            },
+            async syncData() {
+                const { data } = await sb.from('profiles').select('*').eq('id', USER.id).single();
+                if (data) {
+                    document.getElementById('coins-display').innerText = (data.coins || 0) + " 💎";
+                    document.getElementById('role-display').innerText = data.role || "Citoyen";
+                    if(USER.email === "ahmedyas09029-7561@gmail.com") document.getElementById('ceo-mod').style.display = 'block';
+                }
+                Social.load();
+            },
+            setupRealtime() {
+                sb.channel('db-changes').on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, () => this.syncData()).subscribe();
+            }
+        };
+        const Auth = {
+            async login() {
+                const email = document.getElementById('email').value;
+                const password = document.getElementById('pass').value;
+                const { error } = await sb.auth.signInWithPassword({ email, password });
+                if(error) alert(error.message); else location.reload();
+            },
+            async logout() { await sb.auth.signOut(); location.reload(); }
+        };
+        const Social = {
+            async post() {
+                const content = document.getElementById('postIn').value;
+                await sb.from('posts').insert([{ user_id: USER.id, content }]);
+                document.getElementById('postIn').value = "";
+            },
+            async load() {
+                const { data } = await sb.from('posts').select('*').order('created_at', { ascending: false });
+                const feed = document.getElementById('feed'); feed.innerHTML = "";
+                data?.forEach(p => feed.innerHTML += `<div class="post">${p.content}</div>`);
+            }
+        };
+        const AI = { ask() { alert("Analyse IA en cours..."); } };
+        const CEO = {
+            async gift() {
+                const target = document.getElementById('target-id').value;
+                const amount = document.getElementById('amount-to-gift').value;
+                const { error } = await sb.from('profiles').update({ coins: parseInt(amount) }).eq('id', target);
+                if(error) alert(error.message); else alert("SUCCÈS 💎");
+            }
+        };
+        const UI = { switch(id) { document.getElementById('ai-mod').hidden = true; document.getElementById('soc-mod').hidden = true; document.getElementById(id).hidden = false; } };
+    </script>
+</body>
+</html>
