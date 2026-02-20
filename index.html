@@ -3,221 +3,103 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>KORELI TITAN | v24.0</title>
-    
+    <title>KORELI TITAN | v24.1</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link href="https://fonts.googleapis.com/css2?family=Syncopate:wght@700&family=Montserrat:wght@300;600;900&display=swap" rel="stylesheet">
-    
     <style>
         :root { --gold: #FFD700; --bg: #000; --glass: rgba(255, 255, 255, 0.08); --gradient: linear-gradient(135deg, #FFD700 0%, #b8860b 100%); }
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: var(--bg); color: #fff; font-family: 'Montserrat', sans-serif; overflow: hidden; }
-
-        /* --- UI ELEMENTS --- */
         .search-container { position: fixed; top: 15px; left: 50%; transform: translateX(-50%); width: 92%; z-index: 2000; }
         .search-bar { width: 100%; background: rgba(0,0,0,0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255,215,0,0.3); padding: 12px 20px; border-radius: 30px; color: #fff; outline: none; box-sizing: border-box; }
-
         #main-viewport { height: 100vh; overflow-y: scroll; scroll-snap-type: y mandatory; scrollbar-width: none; }
         #main-viewport::-webkit-scrollbar { display: none; }
         .short-slide { height: 100vh; width: 100%; scroll-snap-align: start; position: relative; background: #000; }
         video { width: 100%; height: 100%; object-fit: cover; filter: brightness(0.8); }
-
         .side-actions { position: absolute; right: 15px; bottom: 180px; display: flex; flex-direction: column; gap: 15px; z-index: 100; align-items: center; }
         .action-btn { width: 50px; height: 50px; background: var(--glass); border: 1px solid rgba(255,255,255,0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; backdrop-filter: blur(10px); font-size: 1.2rem; }
         .action-btn.liked { color: var(--gold); border-color: var(--gold); box-shadow: 0 0 15px rgba(255,215,0,0.3); }
-        .btn-agenter { background: none; border: 1px solid var(--gold); color: var(--gold); padding: 6px 12px; border-radius: 20px; font-family: 'Syncopate'; font-size: 0.5rem; font-weight: 900; }
-
         .nav-bar { position: fixed; bottom: 0; width: 100%; height: 75px; background: rgba(0,0,0,0.9); border-top: 1px solid #111; display: flex; justify-content: space-around; align-items: center; z-index: 1000; }
-        .nav-btn { color: #555; font-size: 0.6rem; font-family: 'Syncopate'; cursor: pointer; text-align: center; }
+        .nav-btn { color: #555; font-size: 0.6rem; font-family: 'Syncopate'; cursor: pointer; }
         .nav-btn.active { color: var(--gold); }
         .nav-plus { width: 45px; height: 45px; background: var(--gradient); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #000; font-size: 1.5rem; }
-
         .page { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 3000; display: none; flex-direction: column; padding: 25px; box-sizing: border-box; }
         .page.active { display: flex; }
-        #comment-drawer { position: fixed; bottom: 0; width: 100%; height: 65vh; background: #0a0a0a; border-top: 2px solid var(--gold); z-index: 4000; display: none; flex-direction: column; border-radius: 25px 25px 0 0; }
-        #comment-drawer.active { display: flex; }
     </style>
 </head>
 <body>
-
-<div class="search-container">
-    <input type="text" id="global-search" class="search-bar" placeholder="RECHERCHER MISSION OU AGENT..." oninput="App.search(this.value)">
-</div>
-
-<div id="main-viewport"></div>
-
-<nav class="nav-bar">
-    <div class="nav-btn active" onclick="App.close()">FLUX</div>
-    <div class="nav-btn" onclick="App.open('chat')">CHAT</div>
-    <div class="nav-plus" onclick="App.open('upload')">+</div>
-    <div class="nav-btn" onclick="App.open('arsenal')">ARSENAL</div>
-    <div class="nav-btn" onclick="App.open('me')">PROFIL</div>
-</nav>
-
-<div id="comment-drawer">
-    <div style="padding:20px; border-bottom:1px solid #222; display:flex; justify-content:space-between; font-family:'Syncopate'; font-size:0.7rem;">
-        <span style="color:var(--gold)">DEBRIEFING PUBLIC</span>
-        <button onclick="App.closeComments()" style="color:#fff; background:none; border:none; font-size:1rem;">✕</button>
+    <div class="search-container"><input type="text" id="global-search" class="search-bar" placeholder="RECHERCHER..." oninput="App.search(this.value)"></div>
+    <div id="main-viewport"></div>
+    <nav class="nav-bar">
+        <div class="nav-btn active" onclick="App.close()">FLUX</div>
+        <div class="nav-plus" onclick="App.open('upload')">+</div>
+        <div class="nav-btn" onclick="App.open('me')">PROFIL</div>
+    </nav>
+    <div id="page-upload" class="page">
+        <h2 style="font-family:'Syncopate'; color:var(--gold);">NOUVELLE MISSION</h2>
+        <input type="text" id="post-desc" placeholder="Briefing..." style="background:#111; border:none; padding:18px; color:#fff; border-radius:12px; margin-bottom:15px; width:100%; box-sizing:border-box;">
+        <input type="file" id="post-file" accept="video/*">
+        <button id="btn-publish" onclick="App.uploadVideo()" style="background:var(--gradient); border:none; padding:20px; font-weight:900; border-radius:15px; margin-top:30px; width:100%;">PUBLIER</button>
+        <button onclick="App.close()" style="margin-top:20px; background:none; border:none; color:#444; width:100%;">ANNULER</button>
     </div>
-    <div id="comment-list" style="flex-grow:1; overflow-y:auto; padding:20px; font-size:0.9rem;"></div>
-    <div style="padding:15px; display:flex; gap:10px; background:#111;">
-        <input type="text" id="comment-input" style="flex-grow:1; background:none; border:none; color:#fff;" placeholder="Votre rapport...">
-        <button onclick="App.postComment()" style="color:var(--gold); border:none; background:none; font-weight:900;">POST</button>
-    </div>
-</div>
-
-<div id="page-me" class="page">
-    <div style="text-align:center; padding-top:40px;">
-        <img id="my-avatar" src="" style="width:110px; height:110px; border-radius:50%; border:2px solid var(--gold);">
-        <h2 id="my-username" style="font-family:'Syncopate'; color:var(--gold); margin:15px 0 5px;">@AGENT</h2>
-        <p id="my-bio" style="color:#888; margin-bottom:20px;">...</p>
-        <button onclick="App.logout()" style="background:none; border:1px solid #333; color:#666; padding:10px 20px; border-radius:10px;">DÉCONNEXION</button>
-    </div>
-</div>
-
-<div id="page-upload" class="page">
-    <h2 style="font-family:'Syncopate'; color:var(--gold);">NOUVELLE MISSION</h2>
-    <input type="text" id="post-desc" placeholder="Briefing de la mission..." style="background:#111; border:none; padding:18px; color:#fff; border-radius:12px; margin-bottom:15px;">
-    <input type="file" id="post-file" accept="video/*" style="color:#444;">
-    <button id="btn-publish" onclick="App.uploadVideo()" style="background:var(--gradient); border:none; padding:20px; font-weight:900; border-radius:15px; margin-top:30px;">DÉPLOYER LA VIDÉO</button>
-    <button onclick="App.close()" style="margin-top:20px; background:none; border:none; color:#444;">ANNULER</button>
-</div>
-
-<script>
-    const App = {
-        config: { url: "https://ebykrodcycqcpcfuqpzi.supabase.co", key: "sb_publishable_j_DNfP9D_2K3uAzbb6-Giw_cWJJfR8_" },
-        client: null, user: null, allPosts: [], activePost: null,
-
-        async init() {
-            this.client = supabase.createClient(this.config.url, this.config.key);
-            const { data: { session } } = await this.client.auth.getSession();
-            if (session) { 
-                this.user = session.user; 
-                this.setupObserver();
-                await this.loadFeed(); 
-            } else { window.location.href = "login.html"; }
-        },
-
-        setupObserver() {
-            this.observer = new IntersectionObserver(entries => {
-                entries.forEach(e => {
-                    const v = e.target.querySelector('video');
-                    if (e.isIntersecting) v.play().catch(()=>{}); else v.pause();
-                });
-            }, { threshold: 0.8 });
-        },
-
-        async loadFeed() {
-            const { data } = await this.client.from('posts').select('*, profiles(username, avatar_url), likes(user_id)').order('created_at', {ascending: false});
-            this.allPosts = data;
-            this.renderFeed(this.allPosts);
-        },
-
-        renderFeed(posts) {
-            const v = document.getElementById('main-viewport');
-            v.innerHTML = posts.map(p => {
-                const isLiked = p.likes?.some(l => l.user_id === this.user.id);
-                return `
-                <div class="short-slide">
-                    <div class="side-actions">
-                        <div class="action-btn ${isLiked ? 'liked' : ''}" onclick="App.toggleLike('${p.id}', this)">🔥</div>
-                        <span style="font-size:0.6rem; color:var(--gold); font-weight:900; margin-top:-5px;">${p.likes?.length || 0}</span>
-                        <div class="action-btn" onclick="App.openComments('${p.id}')">💬</div>
-                        ${p.user_id !== this.user.id ? `<button class="btn-agenter" onclick="App.agenter('${p.user_id}', this)">AGENTER</button>` : ''}
-                    </div>
-                    <video loop playsinline muted><source src="${p.image_url}" type="video/mp4"></video>
-                    <div style="position:absolute; bottom:110px; left:20px; text-shadow:0 2px 5px #000;">
-                        <b style="color:var(--gold); font-size:1rem;">@${p.profiles?.username}</b>
-                        <p style="margin:5px 0; font-size:0.85rem; font-weight:300;">${p.content}</p>
-                    </div>
-                </div>`;
-            }).join('');
-            document.querySelectorAll('.short-slide').forEach(s => this.observer.observe(s));
-        },
-
-        search(query) {
-            const filtered = this.allPosts.filter(p => 
-                p.content.toLowerCase().includes(query.toLowerCase()) || 
-                p.profiles?.username.toLowerCase().includes(query.toLowerCase())
-            );
-            this.renderFeed(filtered);
-        },
-
-        async toggleLike(postId, btn) {
-            if (btn.classList.contains('liked')) {
-                await this.client.from('likes').delete().eq('post_id', postId).eq('user_id', this.user.id);
-                btn.classList.remove('liked');
-            } else {
-                await this.client.from('likes').insert([{ post_id: postId, user_id: this.user.id }]);
-                btn.classList.add('liked');
-                if(navigator.vibrate) navigator.vibrate(40);
-            }
-            this.loadFeed(); // Refresh counts
-        },
-
-        async openComments(postId) {
-            this.activePost = postId;
-            document.getElementById('comment-drawer').classList.add('active');
-            this.loadComments(postId);
-        },
-
-        async loadComments(postId) {
-            const { data } = await this.client.from('comments').select('*, profiles(username)').eq('post_id', postId).order('created_at', {ascending: true});
-            document.getElementById('comment-list').innerHTML = data.map(c => `
-                <div style="margin-bottom:12px;"><b style="color:var(--gold)">@${c.profiles?.username}</b> : ${c.content}</div>
-            `).join('');
-        },
-
-        async postComment() {
-            const input = document.getElementById('comment-input');
-            if(!input.value) return;
-            await this.client.from('comments').insert([{ post_id: this.activePost, user_id: this.user.id, content: input.value }]);
-            input.value = ''; this.loadComments(this.activePost);
-        },
-
-        closeComments() { document.getElementById('comment-drawer').classList.remove('active'); },
-
-        async uploadVideo() {
-            const file = document.getElementById('post-file').files[0];
-            const btn = document.getElementById('btn-publish');
-            if(!file) return alert("Sélectionnez une vidéo d'abord !");
-            
-            btn.innerText = "TRANSFERT EN COURS..."; btn.disabled = true;
-            
-            try {
-                const fileName = `${Date.now()}_${file.name.replace(/\s/g, '_')}`;
-                const { error: uploadError } = await this.client.storage.from('videos').upload(fileName, file);
-                if (uploadError) throw uploadError;
-
+    <script>
+        const App = {
+            config: { url: "https://ebykrodcycqcpcfuqpzi.supabase.co", key: "sb_publishable_j_DNfP9D_2K3uAzbb6-Giw_cWJJfR8_" },
+            client: null, user: null, allPosts: [],
+            async init() {
+                this.client = supabase.createClient(this.config.url, this.config.key);
+                const { data: { session } } = await this.client.auth.getSession();
+                if (session) { this.user = session.user; this.setupObserver(); await this.loadFeed(); }
+                else { console.log("Session requise"); }
+            },
+            setupObserver() {
+                this.observer = new IntersectionObserver(entries => {
+                    entries.forEach(e => {
+                        const v = e.target.querySelector('video');
+                        if (e.isIntersecting) v.play().catch(()=>{}); else v.pause();
+                    });
+                }, { threshold: 0.8 });
+            },
+            async loadFeed() {
+                const { data } = await this.client.from('posts').select('*, profiles(username), likes(user_id)').order('created_at', {ascending: false});
+                this.allPosts = data;
+                this.renderFeed(data);
+            },
+            renderFeed(posts) {
+                const v = document.getElementById('main-viewport');
+                v.innerHTML = posts.map(p => `
+                    <div class="short-slide">
+                        <div class="side-actions">
+                            <div class="action-btn" onclick="App.toggleLike('${p.id}', this)">🔥</div>
+                            <span style="font-size:0.6rem; color:var(--gold); font-weight:900;">${p.likes?.length || 0}</span>
+                        </div>
+                        <video loop playsinline muted><source src="${p.image_url}" type="video/mp4"></video>
+                        <div style="position:absolute; bottom:110px; left:20px;">
+                            <b style="color:var(--gold)">@${p.profiles?.username}</b>
+                            <p style="font-size:0.85rem;">${p.content}</p>
+                        </div>
+                    </div>`).join('');
+                document.querySelectorAll('.short-slide').forEach(s => this.observer.observe(s));
+            },
+            search(query) {
+                const filtered = this.allPosts.filter(p => p.content.toLowerCase().includes(query.toLowerCase()));
+                this.renderFeed(filtered);
+            },
+            async uploadVideo() {
+                const file = document.getElementById('post-file').files[0];
+                const btn = document.getElementById('btn-publish');
+                if(!file) return alert("Vidéo requise");
+                btn.innerText = "TRANSFERT..."; btn.disabled = true;
+                const fileName = `${Date.now()}_${file.name}`;
+                await this.client.storage.from('videos').upload(fileName, file);
                 const { data: { publicUrl } } = this.client.storage.from('videos').getPublicUrl(fileName);
-                await this.client.from('posts').insert([{ 
-                    user_id: this.user.id, 
-                    content: document.getElementById('post-desc').value || "Mission Koreli", 
-                    image_url: publicUrl 
-                }]);
-
+                await this.client.from('posts').insert([{ user_id: this.user.id, content: document.getElementById('post-desc').value, image_url: publicUrl }]);
                 location.reload();
-            } catch (err) {
-                alert("Erreur upload : " + err.message);
-                btn.innerText = "RÉESSAYER"; btn.disabled = false;
-            }
-        },
-
-        async loadMyProfile() {
-            const { data: prof } = await this.client.from('profiles').select('*').eq('id', this.user.id).single();
-            document.getElementById('my-avatar').src = prof.avatar_url || `https://api.dicebear.com/7.x/bottts/svg?seed=${this.user.id}`;
-            document.getElementById('my-username').innerText = `@${prof.username}`;
-            document.getElementById('my-bio').innerText = prof.bio || "Agent d'élite Koreli.";
-        },
-
-        open(id) {
-            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-            document.getElementById(`page-${id}`).classList.add('active');
-            if(id === 'me') this.loadMyProfile();
-        },
-        close() { document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); },
-        async logout() { await this.client.auth.signOut(); location.reload(); }
-    };
-    App.init();
-</script>
+            },
+            open(id) { document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); document.getElementById(`page-${id}`).classList.add('active'); },
+            close() { document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); }
+        };
+        App.init();
+    </script>
 </body>
 </html>
+
