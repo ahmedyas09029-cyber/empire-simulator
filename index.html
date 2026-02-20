@@ -1,132 +1,228 @@
-      <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>KORELI DOMINION | SYSTEM</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KORELI DOMINION | ABSOLUTE v10.0</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Syncopate:wght@700&family=Inter:wght@400;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Syncopate:wght@700&family=Inter:wght@300;400;700&display=swap" rel="stylesheet">
     <style>
-        :root { --gold: linear-gradient(135deg, #FFD700, #B8860B); --bg: #000; --glass: rgba(255,255,255,.06); --border: rgba(255,255,255,.15); }
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { margin: 0; font-family: 'Inter', sans-serif; background: #000; color: #fff; height: 100vh; overflow: hidden; }
-        header { padding: 20px; text-align: center; border-bottom: 1px solid var(--border); font-family: 'Syncopate'; letter-spacing: 3px; background: rgba(0,0,0,0.8); backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 100; }
-        .content { padding: 20px; height: calc(100vh - 75px); overflow-y: auto; scroll-behavior: smooth; }
-        .card { background: var(--glass); border: 1px solid var(--border); border-radius: 25px; padding: 22px; margin-bottom: 20px; }
-        .btn-gold { background: var(--gold); color: #000; border: none; padding: 16px; border-radius: 18px; width: 100%; font-weight: 900; cursor: pointer; text-transform: uppercase; font-size: 0.9rem; }
-        .btn-outline { background: var(--glass); color: #fff; border: 1px solid var(--border); padding: 12px; border-radius: 15px; width: 100%; font-weight: bold; cursor: pointer; }
-        .grid-menu { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
-        input, textarea { width: 100%; padding: 15px; border-radius: 15px; background: rgba(255,255,255,0.08); border: 1px solid var(--border); color: #fff; margin: 8px 0; font-size: 1rem; }
-        .post { background: rgba(255,255,255,0.04); padding: 18px; border-radius: 20px; margin-bottom: 12px; border-left: 4px solid #FFD700; }
-        #chat-box { height: 200px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px; border-bottom: 1px solid var(--border); }
-        .msg-user { align-self: flex-end; background: #333; padding: 10px 15px; border-radius: 15px 15px 0 15px; font-size: 0.85rem; }
-        .msg-ai { align-self: flex-start; background: var(--gold); color: #000; padding: 10px 15px; border-radius: 15px 15px 15px 0; font-size: 0.85rem; font-weight: bold; }
-        .status-live { font-size: 0.65rem; color: #00ff88; letter-spacing: 1px; font-weight: bold; display: flex; align-items: center; gap: 5px; }
-        .dot { height: 6px; width: 6px; background-color: #00ff88; border-radius: 50%; display: inline-block; animation: blink 1s infinite; }
-        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
+        :root { --gold: #FFD700; --bg: #050505; --card: rgba(25, 25, 25, 0.7); --neon: #00ff88; }
+        body { margin: 0; background: var(--bg); color: #f0f0f0; font-family: 'Inter', sans-serif; background-image: radial-gradient(circle at top right, #111, #050505); min-height: 100vh; }
+        
+        header { height: 70px; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.9); border-bottom: 2px solid var(--gold); font-family: 'Syncopate'; letter-spacing: 6px; position: sticky; top: 0; z-index: 1000; backdrop-filter: blur(10px); }
+        
+        .container { max-width: 550px; margin: 20px auto; padding: 0 15px; }
+        
+        /* Glassmorphism Effect */
+        .card { background: var(--card); border: 1px solid rgba(255, 215, 0, 0.2); padding: 20px; margin-bottom: 20px; border-radius: 12px; backdrop-filter: blur(15px); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        
+        .label { font-size: 0.65rem; color: var(--gold); text-transform: uppercase; font-weight: 900; letter-spacing: 2px; display: block; margin-bottom: 12px; opacity: 0.8; }
+        
+        /* Leaderboard Modern */
+        .rank-box { background: linear-gradient(90deg, rgba(0, 255, 136, 0.1), transparent); border-left: 4px solid var(--neon); padding: 15px; margin-bottom: 25px; border-radius: 4px; }
+        .rank-item { display: flex; justify-content: space-between; font-size: 0.8rem; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .crown { color: var(--gold); margin-left: 5px; font-size: 0.9rem; }
+
+        input, textarea { width: 100%; padding: 14px; background: rgba(0,0,0,0.5); border: 1px solid #333; color: #fff; margin: 8px 0; border-radius: 8px; font-family: 'Inter'; transition: 0.3s; }
+        input:focus { border-color: var(--gold); outline: none; background: rgba(0,0,0,0.8); }
+        
+        .btn { background: var(--gold); color: #000; border: none; padding: 15px; width: 100%; font-weight: 800; cursor: pointer; text-transform: uppercase; border-radius: 8px; transition: 0.3s; font-family: 'Syncopate'; font-size: 0.7rem; }
+        .btn:hover { background: #fff; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(255,215,0,0.3); }
+        
+        .post { background: rgba(30,30,30,0.5); padding: 20px; border: 1px solid #333; margin-bottom: 20px; border-radius: 15px; animation: slideIn 0.5s ease; }
+        @keyframes slideIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        
+        .avatar-img { width: 45px; height: 45px; border-radius: 12px; border: 1px solid var(--gold); object-fit: cover; }
+        
+        .media-box img { width: 100%; border-radius: 10px; margin-top: 15px; border: 1px solid #444; }
+        
+        .comment-area { background: rgba(0,0,0,0.3); padding: 15px; border-radius: 10px; margin-top: 15px; border: 1px solid rgba(255,255,255,0.05); }
+        .comment-item { font-size: 0.75rem; margin-bottom: 8px; padding-bottom: 5px; border-bottom: 1px solid rgba(255,255,255,0.03); }
+
+        .notif-toast { position: fixed; top: 80px; right: 20px; background: #000; color: var(--gold); border: 1px solid var(--gold); padding: 12px 20px; border-radius: 8px; font-size: 0.7rem; font-family: 'Syncopate'; z-index: 2000; animation: fadeInRight 0.3s; }
+        @keyframes fadeInRight { from { transform: translateX(100%); } to { transform: translateX(0); } }
     </style>
 </head>
-<body onload="Core.init()">
-    <header>KORELI DOMINION</header>
-    <div id="auth-screen" style="display:none;" class="content">
-        <div class="card" style="margin-top: 40px;">
-            <h2 style="text-align:center; font-family: 'Syncopate'; font-size: 0.8rem; color: #FFD700;">ACCÈS IMPÉRIAL</h2>
-            <input type="email" id="email" placeholder="Email">
-            <input type="password" id="pass" placeholder="Mot de passe">
-            <button class="btn-gold" onclick="Auth.login()">SE CONNECTER</button>
+<body>
+
+<div id="notif-layer"></div>
+<header>KORELI DOMINION</header>
+
+<main class="container">
+    <section id="auth-section" class="card">
+        <span class="label">Identification des Agents</span>
+        <input type="email" id="auth-email" placeholder="Email de session">
+        <input type="password" id="auth-password" placeholder="Code d'accès">
+        <button class="btn" onclick="Dominion.handleAuth()">SÉCURISER LA LIAISON</button>
+        <p onclick="Dominion.toggleAuthMode()" style="font-size: 0.6rem; text-align: center; margin-top: 15px; cursor: pointer; color: #666; letter-spacing: 1px;">CRÉER UN NOUVEL ACCÈS</p>
+    </section>
+
+    <section id="app-section" style="display: none;">
+        <div class="rank-box">
+            <span class="label" style="color:var(--neon);">Tableau d'Honneur (XP)</span>
+            <div id="leaderboard">Analyse du réseau...</div>
         </div>
-    </div>
-    <div id="app" style="display:none;" class="content">
+
         <div class="card">
-            <div class="status-live"><span class="dot"></span> SYNC TEMPS RÉEL ACTIVE</div>
-            <div id="role-display" style="color:#FFD700; font-weight:900; font-size: 0.75rem; margin-top:10px;">Citoyen</div>
-            <div id="coins-display" style="font-size: 3.5rem; font-weight: 900; background: var(--gold); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">0 💎</div>
-            <div id="user-id-tag" style="font-size: 0.6rem; color: #555;">ID: ...</div>
+            <span class="label">Nouveau Rapport</span>
+            <textarea id="p-text" placeholder="Quoi de neuf dans l'Empire ?" rows="2"></textarea>
+            <div style="display:flex; gap:10px;">
+                <button class="btn" style="background:#222; color:var(--gold); flex:1;" onclick="document.getElementById('p-img').click()">📷 IMAGE</button>
+                <input type="file" id="p-img" accept="image/*" style="display:none;">
+                <button class="btn" style="flex:2;" onclick="Dominion.sendPost()">TRANSMETTRE</button>
+            </div>
+            <div id="p-preview" style="display:none; margin-top:15px;"><img id="preview-src" style="width:100%; border-radius:8px; border:1px solid var(--gold);"></div>
         </div>
-        <div class="grid-menu">
-            <button class="btn-outline" onclick="UI.switch('ai-mod')">🤖 K-IA</button>
-            <button class="btn-outline" onclick="UI.switch('soc-mod')">🌍 RÉSEAU</button>
-        </div>
-        <div id="ai-mod" class="card" hidden>
-            <h3>MÉMOIRE IA</h3>
-            <div id="chat-box"></div>
-            <input id="aiIn" placeholder="Commande...">
-            <button class="btn-gold" onclick="AI.ask()">ANALYSER</button>
-        </div>
-        <div id="soc-mod" class="card" hidden>
-            <h3>FLUX GLOBAL</h3>
-            <textarea id="postIn" placeholder="Quoi de neuf ?"></textarea>
-            <button class="btn-gold" onclick="Social.post()">PUBLIER</button>
-            <div id="feed" style="margin-top: 20px;"></div>
-        </div>
-        <div id="ceo-mod" class="card" style="display:none; border: 1px solid #FFD700;">
-            <h3 style="color:#FFD700;">👑 BANQUE CENTRALE</h3>
-            <input id="target-id" placeholder="ID Citoyen">
-            <input id="amount-to-gift" type="number" placeholder="Montant">
-            <button class="btn-gold" onclick="CEO.gift()">INJECTER</button>
-        </div>
-        <button onclick="Auth.logout()" style="color:red; background:none; border:none; width:100%; padding:20px;">DÉCONNEXION</button>
-    </div>
-    <script>
-        const SUPABASE_URL = "https://ebykrodcycqcpcfuqpzi.supabase.co";
-        const SUPABASE_KEY = "sb_publishable_j_DNfP9D_2K3uAzbb6-Giw_cWJJfR8_";
-        const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-        let USER = null;
-        const Core = {
-            async init() {
-                const { data: { session } } = await sb.auth.getSession();
-                if (session) {
-                    USER = session.user;
-                    document.getElementById('app').style.display = 'block';
-                    document.getElementById('user-id-tag').innerText = "ID: " + USER.id;
-                    this.syncData();
-                    this.setupRealtime();
-                } else { document.getElementById('auth-screen').style.display = 'block'; }
-            },
-            async syncData() {
-                const { data } = await sb.from('profiles').select('*').eq('id', USER.id).single();
-                if (data) {
-                    document.getElementById('coins-display').innerText = (data.coins || 0) + " 💎";
-                    document.getElementById('role-display').innerText = data.role || "Citoyen";
-                    if(USER.email === "ahmedyas09029-7561@gmail.com") document.getElementById('ceo-mod').style.display = 'block';
+
+        <div id="feed"></div>
+    </section>
+</main>
+
+<script>
+    const Dominion = {
+        config: { url: "https://ebykrodcycqcpcfuqpzi.supabase.co", key: "sb_publishable_j_DNfP9D_2K3uAzbb6-Giw_cWJJfR8_" },
+        client: null, user: null, isSignUp: false, topAgent: null,
+
+        async init() {
+            this.client = supabase.createClient(this.config.url, this.config.key);
+            const { data: { session } } = await this.client.auth.getSession();
+            if (session) this.launch(session.user);
+
+            document.getElementById('p-img').onchange = (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (ev) => { document.getElementById('preview-src').src = ev.target.result; document.getElementById('p-preview').style.display = 'block'; };
+                    reader.readAsDataURL(file);
                 }
-                Social.load();
-            },
-            setupRealtime() {
-                sb.channel('db-changes').on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, () => this.syncData()).subscribe();
+            };
+        },
+
+        async launch(user) {
+            this.user = user;
+            document.getElementById('auth-section').style.display = 'none';
+            document.getElementById('app-section').style.display = 'block';
+            this.notify("SYSTEM ONLINE");
+            this.loadFeed();
+            this.loadLeaderboard();
+            this.enableRealtime();
+        },
+
+        enableRealtime() {
+            this.client.channel('empire').on('postgres_changes', { event: '*', schema: 'public' }, (p) => {
+                this.loadFeed();
+                this.loadLeaderboard();
+                if(p.eventType === 'INSERT') { this.beep(); this.notify("TRANSMISSION REÇUE"); }
+            }).subscribe();
+        },
+
+        beep() {
+            const c = new AudioContext(); const o = c.createOscillator(); const g = c.createGain();
+            o.type = "sine"; o.frequency.value = 900; g.gain.exponentialRampToValueAtTime(0.0001, c.currentTime + 0.12);
+            o.connect(g); g.connect(c.destination); o.start(); o.stop(c.currentTime + 0.12);
+        },
+
+        notify(m) {
+            const t = document.createElement('div'); t.className = "notif-toast"; t.innerText = `[INFO] ${m}`;
+            document.getElementById('notif-layer').appendChild(t); setTimeout(() => t.remove(), 3500);
+        },
+
+        async loadLeaderboard() {
+            const { data } = await this.client.from('profiles').select('username, posts(likes(count))');
+            if(data) {
+                const scores = data.map(u => ({
+                    name: u.username || "Agent Inconnu",
+                    pts: u.posts.reduce((s, p) => s + (p.likes[0]?.count || 0), 0)
+                })).sort((a,b) => b.pts - a.pts).slice(0, 3);
+                this.topAgent = scores[0]?.name;
+                document.getElementById('leaderboard').innerHTML = scores.map((s, i) => `
+                    <div class="rank-item">
+                        <span>${i==0?'🥇':'•'} ${s.name} ${i==0?'<span class="crown">👑</span>':''}</span>
+                        <b style="color:var(--neon);">${s.pts} XP</b>
+                    </div>
+                `).join('');
             }
-        };
-        const Auth = {
-            async login() {
-                const email = document.getElementById('email').value;
-                const password = document.getElementById('pass').value;
-                const { error } = await sb.auth.signInWithPassword({ email, password });
-                if(error) alert(error.message); else location.reload();
-            },
-            async logout() { await sb.auth.signOut(); location.reload(); }
-        };
-        const Social = {
-            async post() {
-                const content = document.getElementById('postIn').value;
-                await sb.from('posts').insert([{ user_id: USER.id, content }]);
-                document.getElementById('postIn').value = "";
-            },
-            async load() {
-                const { data } = await sb.from('posts').select('*').order('created_at', { ascending: false });
-                const feed = document.getElementById('feed'); feed.innerHTML = "";
-                data?.forEach(p => feed.innerHTML += `<div class="post">${p.content}</div>`);
-            }
-        };
-        const AI = { ask() { alert("Analyse IA en cours..."); } };
-        const CEO = {
-            async gift() {
-                const target = document.getElementById('target-id').value;
-                const amount = document.getElementById('amount-to-gift').value;
-                const { error } = await sb.from('profiles').update({ coins: parseInt(amount) }).eq('id', target);
-                if(error) alert(error.message); else alert("SUCCÈS 💎");
-            }
-        };
-        const UI = { switch(id) { document.getElementById('ai-mod').hidden = true; document.getElementById('soc-mod').hidden = true; document.getElementById(id).hidden = false; } };
-    </script>
+        },
+
+        async sendPost() {
+            const txt = document.getElementById('p-text').value;
+            const file = document.getElementById('p-img').files[0];
+            let url = null;
+            if(!txt && !file) return;
+
+            try {
+                if(file) {
+                    const name = ` rapports/${Date.now()}_${file.name}`;
+                    await this.client.storage.from('rapports').upload(name, file);
+                    url = this.client.storage.from('rapports').getPublicUrl(name).data.publicUrl;
+                }
+                await this.client.from('posts').insert([{ user_id: this.user.id, content: txt, image_url: url }]);
+                this.resetForm();
+            } catch (e) { this.notify("ERREUR TRANSMISSION"); }
+        },
+
+        async sendComment(pid) {
+            const i = document.getElementById(`c-in-${pid}`);
+            if(!i.value) return;
+            await this.client.from('comments').insert([{ post_id: pid, user_id: this.user.id, content: i.value }]);
+            i.value = "";
+        },
+
+        async toggleLike(pid) {
+            const { data } = await this.client.from('likes').select('id').eq('post_id', pid).eq('user_id', this.user.id).single();
+            if(data) await this.client.from('likes').delete().eq('id', data.id);
+            else await this.client.from('likes').insert([{ post_id: pid, user_id: this.user.id }]);
+        },
+
+        async loadFeed() {
+            const { data } = await this.client.from('posts').select('*, profiles(*), likes(count), comments(*, profiles(username))').order('created_at', {ascending: false});
+            if(data) document.getElementById('feed').innerHTML = data.map(p => this.renderPost(p)).join('');
+        },
+
+        renderPost(p) {
+            const name = p.profiles?.username || `Agent_${p.user_id.slice(0,4)}`;
+            const av = p.profiles?.avatar_url || `https://api.dicebear.com/7.x/bottts/svg?seed=${p.user_id}`;
+            const isTop = name === this.topAgent;
+            return `
+                <div class="post">
+                    <div style="display:flex; align-items:center; gap:12px; margin-bottom:15px;">
+                        <img src="${av}" class="avatar-img">
+                        <div style="display:flex; flex-direction:column;">
+                            <span class="label" style="margin:0; font-size:0.75rem;">${name} ${isTop?'<span class="crown">👑</span>':''}</span>
+                            <span style="font-size:0.55rem; opacity:0.4;">${new Date(p.created_at).toLocaleDateString()}</span>
+                        </div>
+                    </div>
+                    <p style="margin:10px 0; font-size:0.95rem; line-height:1.6;">${p.content}</p>
+                    ${p.image_url ? `<div class="media-box"><img src="${p.image_url}"></div>` : ""}
+                    
+                    <div class="comment-area">
+                        ${p.comments.map(c => `<div class="comment-item"><b style="color:var(--gold);">${c.profiles?.username}:</b> ${c.content}</div>`).join('')}
+                        <div style="display:flex; gap:8px; margin-top:10px;">
+                            <input type="text" id="c-in-${p.id}" placeholder="Ajouter un commentaire..." style="font-size:0.65rem; padding:8px; margin:0;">
+                            <button class="btn" style="width:auto; padding:5px 15px; font-size:0.5rem;" onclick="Dominion.sendComment('${p.id}')">OK</button>
+                        </div>
+                    </div>
+
+                    <div style="display:flex; justify-content:space-between; margin-top:20px; align-items:center;">
+                        <button class="btn" style="width:auto; padding:8px 20px; font-size:0.6rem; background:rgba(255,215,0,0.1); color:var(--gold); border:1px solid var(--gold);" onclick="Dominion.toggleLike('${p.id}')">
+                            👍 APPROUVER (${p.likes[0]?.count || 0})
+                        </button>
+                    </div>
+                </div>`;
+        },
+
+        async handleAuth() {
+            const e = document.getElementById('auth-email').value;
+            const p = document.getElementById('auth-password').value;
+            const { data, error } = this.isSignUp ? await this.client.auth.signUp({ email:e, password:p }) : await this.client.auth.signInWithPassword({ email:e, password:p });
+            if (error) this.notify("ACCÈS REFUSÉ"); else this.launch(data.user);
+        },
+
+        toggleAuthMode() { this.isSignUp = !this.isSignUp; document.querySelector('#auth-section .btn').innerText = this.isSignUp ? "CRÉER LA MATRICE" : "SÉCURISER LA LIAISON"; },
+        resetForm() { document.getElementById('p-text').value=''; document.getElementById('p-preview').style.display='none'; document.getElementById('p-img').value=''; }
+    };
+    Dominion.init();
+</script>
 </body>
 </html>
