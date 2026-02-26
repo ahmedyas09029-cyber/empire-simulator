@@ -3,104 +3,90 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>KORELI OS | V2.2 TITAN</title>
+    <title>KORELI OS | V3.0 SOLARIS</title>
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
-        :root { --accent: #00f2ea; --bg: #000; --surface: #0a0a0a; --p: #FFD700; }
+        :root { --accent: #00f2ea; --bg: #000; --surface: #0d0d0d; --p: #FFD700; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
         body { background: #000; color: white; font-family: 'Inter', sans-serif; height: 100vh; overflow: hidden; }
 
-        /* LOADER */
+        /* LOADER ULTRA-RAPIDE */
         #loader { 
             position: fixed; inset: 0; background: #000; z-index: 9999; 
             display: flex; flex-direction: column; align-items: center; justify-content: center; 
             color: var(--accent); font-size: 10px; letter-spacing: 3px;
+            transition: 0.5s;
         }
 
-        /* SYSTÈME DE VUES */
-        .view { position: absolute; inset: 0; opacity: 0; transition: opacity 0.4s ease; pointer-events: none; visibility: hidden; }
+        .view { position: absolute; inset: 0; opacity: 0; transition: 0.4s; pointer-events: none; visibility: hidden; }
         .view.active { opacity: 1; pointer-events: auto; visibility: visible; z-index: 10; }
 
-        /* FEED SCROLL */
+        /* FEED ENGINE */
         #feed { height: 100vh; overflow-y: scroll; scroll-snap-type: y mandatory; scrollbar-width: none; }
-        #feed::-webkit-scrollbar { display: none; }
-        .unit { height: 100vh; width: 100%; scroll-snap-align: start; position: relative; background: #000; }
-        video { width: 100%; height: 100%; object-fit: cover; }
+        .unit { height: 100vh; width: 100%; scroll-snap-align: start; position: relative; background: #050505; }
+        video { width: 100%; height: 100%; object-fit: cover; background: #000; }
 
-        /* HUD & UI */
-        .v-hud { position: absolute; bottom: 120px; left: 20px; right: 80px; z-index: 100; pointer-events: none; text-shadow: 0 2px 10px #000; }
-        .rank-tag { background: var(--accent); color: #000; font-size: 10px; font-weight: 900; padding: 5px 12px; border-radius: 4px; text-transform: uppercase; display: inline-block; }
+        /* HUD & INTERFACE */
+        .v-hud { position: absolute; bottom: 100px; left: 20px; right: 80px; z-index: 100; pointer-events: none; }
+        .rank-tag { background: var(--accent); color: #000; font-size: 10px; font-weight: 900; padding: 5px 12px; border-radius: 4px; text-transform: uppercase; display: inline-block; box-shadow: 0 0 10px var(--accent); }
         
-        /* CARTE AGENT (INVISIBLE POUR SNAPSHOT) */
-        #capture-zone { position: absolute; left: -9999px; top: 0; }
-        .agent-card {
-            width: 320px; padding: 30px; background: #050505; border: 2px solid var(--accent);
-            border-radius: 20px; text-align: center; color: white;
-        }
+        /* CARD SNAPSHOT */
+        #capture-zone { position: absolute; left: -9999px; }
+        .agent-card { width: 320px; padding: 30px; background: #000; border: 2px solid var(--accent); border-radius: 20px; text-align: center; }
 
-        /* PROFIL & QUÊTES */
-        .quest-card { background: #111; padding: 15px; border-radius: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #222; transition: 0.3s; }
-        .quest-card.done { border-color: #00f2ea33; opacity: 0.5; background: #001a1a; }
+        /* NAV */
+        .nav-os { position: fixed; bottom: 0; width: 100%; height: 75px; background: rgba(0,0,0,0.95); display: flex; justify-content: space-around; align-items: center; z-index: 1000; border-top: 1px solid #1a1a1a; }
+        .nav-os div { color: #333; font-size: 24px; transition: 0.3s; padding: 10px; }
+        .nav-os .active { color: var(--accent); filter: drop-shadow(0 0 8px var(--accent)); }
 
-        /* NAVIGATION */
-        .nav-os { position: fixed; bottom: 0; width: 100%; height: 75px; background: rgba(0,0,0,0.9); display: flex; justify-content: space-around; align-items: center; z-index: 1000; border-top: 1px solid #1a1a1a; padding-bottom: env(safe-area-inset-bottom); }
-        .nav-os div { color: #333; font-size: 22px; transition: 0.3s; cursor: pointer; }
-        .nav-os .active { color: var(--accent); filter: drop-shadow(0 0 8px var(--accent)); transform: translateY(-3px); }
+        .btn-main { width: 100%; padding: 16px; background: var(--accent); color: #000; border: none; border-radius: 12px; font-weight: 900; cursor: pointer; margin-top: 20px; }
     </style>
 </head>
 <body>
 
-    <div id="loader">
-        <i class="fa-solid fa-circle-notch fa-spin fa-2x" style="margin-bottom: 15px;"></i>
-        <span>ENCRYPTING_SESSION...</span>
-    </div>
-
-    <div id="capture-zone">
-        <div id="final-card" class="agent-card">
-            <div style="font-size: 9px; letter-spacing: 4px; color: #00f2ea; margin-bottom: 20px;">KORELI_NETWORK_AUTH</div>
-            <div style="font-size: 50px; margin-bottom: 10px;">🛡️</div>
-            <h2 id="card-name" style="margin: 10px 0; letter-spacing: 1px; text-transform: uppercase;">AGENT</h2>
-            <div id="card-rank" class="rank-tag" style="margin-bottom: 25px;">RECRUE</div>
-            <div style="text-align: left; border-top: 1px solid #222; padding-top: 15px;">
-                <div style="font-size: 9px; color: #666;">EXPERIENCE_POINTS</div>
-                <div id="card-xp" style="font-size: 22px; font-weight: 900; color: #00f2ea;">0 XP</div>
-            </div>
-        </div>
-    </div>
+    <div id="loader"><span>BYPASSING_SECURITY...</span></div>
 
     <div id="v-feed" class="view active">
         <div id="feed"></div>
     </div>
 
-    <div id="v-profile" class="view" style="padding: 60px 20px; overflow-y: auto; padding-bottom: 100px;">
-        <div style="background:#0a0a0a; padding:30px; border-radius:25px; text-align:center; border:1px solid #222;">
-            <div style="font-size:45px; color:var(--accent); margin-bottom:10px;"><i class="fa-solid fa-user-shield"></i></div>
-            <h2 id="prof-user" style="margin-bottom: 5px; text-transform: uppercase;">IDENTIFICATION...</h2>
+    <div id="v-profile" class="view" style="padding: 50px 20px; overflow-y: auto;">
+        <div style="background:var(--surface); padding:30px; border-radius:25px; text-align:center; border:1px solid #222;">
+            <div style="font-size:50px; color:var(--accent); margin-bottom:10px;"><i class="fa-solid fa-user-astronaut"></i></div>
+            <h2 id="prof-user" style="text-transform: uppercase; margin-bottom: 5px;">CHARGEMENT...</h2>
             <div id="prof-rank-tag" class="rank-tag">RECRUE</div>
             
-            <button onclick="takeSnapshot()" style="width:100%; margin-top:25px; padding:16px; background:var(--accent); color:#000; border:none; border-radius:12px; font-weight:900; letter-spacing: 1px;">
-                <i class="fa-solid fa-camera"></i> GÉNÉRER CARTE D'AGENT
+            <button class="btn-main" onclick="takeSnapshot()">
+                <i class="fa-solid fa-share-nodes"></i> PARTAGER MON GRADE
             </button>
         </div>
 
-        <h4 style="color:var(--accent); margin:35px 0 15px; font-size: 11px; letter-spacing:2px; font-weight: 900;">MISSIONS_JOURNALIÈRES</h4>
-        <div id="quest-list">
-            </div>
+        <h4 style="color:var(--accent); margin:30px 0 15px; font-size: 11px; letter-spacing:2px;">MISSIONS_DU_JOUR</h4>
+        <div id="quest-list"></div>
+        
+        <button onclick="logout()" style="width:100%; margin-top:40px; background:none; border:1px solid #333; color:#444; padding:10px; border-radius:8px; font-size:10px;">DECONNEXION</button>
+    </div>
 
-        <button onclick="logout()" style="width:100%; margin-top:40px; padding:15px; background:none; border:1px solid #333; color:#444; border-radius:10px; font-size: 12px;">DÉCONNEXION UNITÉ</button>
+    <div id="capture-zone">
+        <div id="final-card" class="agent-card">
+            <div style="color:var(--accent); font-size:9px; letter-spacing:4px; margin-bottom:20px;">KORELI_OS_VERIFIED</div>
+            <div style="font-size:50px; margin-bottom:10px;">🛡️</div>
+            <h2 id="card-name" style="color:white; text-transform:uppercase;">AGENT</h2>
+            <div id="card-rank" class="rank-tag" style="margin: 15px 0;">RECRUE</div>
+            <div id="card-xp" style="font-size:22px; font-weight:900; color:var(--accent); margin-top:20px;">0 XP</div>
+        </div>
     </div>
 
     <nav class="nav-os">
-        <div class="active" onclick="switchTab('v-feed', this)"><i class="fa-solid fa-clapperboard"></i></div>
-        <div onclick="switchTab('v-profile', this)"><i class="fa-solid fa-id-card"></i></div>
+        <div class="active" onclick="switchTab('v-feed', this)"><i class="fa-solid fa-play"></i></div>
+        <div onclick="switchTab('v-profile', this)"><i class="fa-solid fa-user-ninja"></i></div>
     </nav>
 
     <script>
-        // --- ⚙️ CONFIGURATION (REMPLACE PAR TES CLÉS) ---
         const _URL = "https://ebykrodcycqcpcfuqpzi.supabase.co";
         const _KEY = "sb_publishable_j_DNfP9D_2K3uAzbb6-Giw_cWJJfR8_";
         const sup = supabase.createClient(_URL, _KEY);
@@ -112,14 +98,13 @@
             return "RECRUE";
         }
 
-        // --- 🚀 DÉMARRAGE DU SYSTÈME ---
+        // --- 🚀 BOOT PRIORITAIRE ---
         async function boot() {
-            // Sécurité : On retire le loader quoi qu'il arrive après 3.5s
-            const safety = setTimeout(() => hideLoader(), 3500);
+            // 1. On retire le loader très vite
+            setTimeout(() => { document.getElementById('loader').style.opacity = '0'; setTimeout(()=>document.getElementById('loader').style.display='none', 500); }, 1500);
 
             try {
-                const { data: posts, error } = await sup.from('posts').select('*').order('created_at', {ascending: false});
-                
+                const { data: posts } = await sup.from('posts').select('*').order('created_at', {ascending: false});
                 if (posts && posts.length > 0) {
                     document.getElementById('feed').innerHTML = posts.map(p => `
                         <div class="unit">
@@ -132,15 +117,9 @@
                     `).join('');
                     setupObserver();
                 } else {
-                    document.getElementById('feed').innerHTML = `<div style="padding-top:200px; text-align:center; color:#333; font-size:12px;">SYSTEME_VIDE : AUCUNE DONNEE TROUVEE</div>`;
+                    document.getElementById('feed').innerHTML = `<div style="padding:100px; text-align:center; color:#555;">AUCUNE DONNÉE DANS LE FLUX.</div>`;
                 }
-            } catch (e) { console.error("Boot Error:", e); }
-            finally { clearTimeout(safety); hideLoader(); }
-        }
-
-        function hideLoader() {
-            const l = document.getElementById('loader');
-            if(l) { l.style.opacity = '0'; setTimeout(() => l.style.display = 'none', 500); }
+            } catch (e) { console.log("Silent error"); }
         }
 
         function setupObserver() {
@@ -153,86 +132,64 @@
             document.querySelectorAll('.unit').forEach(u => obs.observe(u));
         }
 
-        // --- 📊 GESTION DU PROFIL ---
         async function refreshProfile() {
-            try {
-                const { data: { user } } = await sup.auth.getUser();
-                if(!user) return;
-
-                const { data: profs } = await sup.from('profiles').select('*').eq('id', user.id);
-                const xp = (profs && profs[0]) ? profs[0].total_xp : 0;
-                const rank = getRank(xp);
-                const name = user.email.split('@')[0].toUpperCase();
-
-                // Mise à jour Interface
-                document.getElementById('prof-user').innerText = name;
-                document.getElementById('prof-rank-tag').innerText = rank;
-                
-                // Mise à jour Carte (Snapshot)
-                document.getElementById('card-name').innerText = name;
-                document.getElementById('card-rank').innerText = rank;
-                document.getElementById('card-xp').innerText = xp + " XP";
-
-                // Chargement des Quêtes
-                const today = new Date().toISOString().split('T')[0];
-                const { data: quests } = await sup.from('quests').select('*');
-                const { data: completed } = await sup.from('user_quests').select('quest_id').eq('user_id', user.id).eq('completed_at', today);
-                
-                const doneIds = completed ? completed.map(c => c.quest_id) : [];
-
-                document.getElementById('quest-list').innerHTML = quests.map(q => {
-                    const isDone = doneIds.includes(q.id);
-                    return `
-                        <div class="quest-card ${isDone ? 'done' : ''}" onclick="${isDone ? '' : `claimQuest('${q.id}', ${q.xp_reward})`}">
-                            <div>
-                                <div style="font-size:13px; font-weight:900;">${q.title}</div>
-                                <div style="font-size:9px; color:${isDone ? '#00f2ea' : '#555'}">${isDone ? 'MISSION_TERMINEE' : 'EN_ATTENTE'}</div>
-                            </div>
-                            <div style="color:var(--p); font-weight:900;">+${q.xp_reward} XP</div>
-                        </div>
-                    `;
-                }).join('');
-            } catch (err) { console.error("Profile Error:", err); }
-        }
-
-        async function claimQuest(qId, reward) {
             const { data: { user } } = await sup.auth.getUser();
-            const { data: res } = await sup.rpc('claim_quest_xp_secure', { u_id: user.id, q_id: qId, reward: reward });
-            
-            if (res === 'SUCCESS') {
-                if(navigator.vibrate) navigator.vibrate([20, 50]);
-                refreshProfile();
-            } else {
-                alert("🔒 Cette mission a déjà été sécurisée aujourd'hui.");
+            if(!user) { document.getElementById('prof-user').innerText = "AGENT_INCONNU"; return; }
+
+            const { data: profs } = await sup.from('profiles').select('*').eq('id', user.id);
+            const xp = (profs && profs[0]) ? profs[0].total_xp : 0;
+            const rank = getRank(xp);
+            const name = user.email.split('@')[0].toUpperCase();
+
+            document.getElementById('prof-user').innerText = name;
+            document.getElementById('prof-rank-tag').innerText = rank;
+            document.getElementById('card-name').innerText = name;
+            document.getElementById('card-rank').innerText = rank;
+            document.getElementById('card-xp').innerText = xp + " XP";
+
+            // Quêtes
+            const { data: qs } = await sup.from('quests').select('*');
+            if(qs) {
+                document.getElementById('quest-list').innerHTML = qs.map(q => `
+                    <div style="background:#151515; padding:15px; border-radius:12px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center; border:1px solid #222;" onclick="claim('${q.id}', ${q.xp_reward})">
+                        <div>
+                            <div style="font-size:13px; font-weight:bold;">${q.title}</div>
+                            <div style="font-size:9px; color:var(--accent);">MISSION_DISPONIBLE</div>
+                        </div>
+                        <div style="color:var(--p); font-weight:900;">+${q.xp_reward}</div>
+                    </div>
+                `).join('');
             }
         }
 
-        // --- 📸 GÉNÉRATEUR D'IMAGE ---
+        async function claim(qId, reward) {
+            const { data: { user } } = await sup.auth.getUser();
+            await sup.rpc('claim_quest_xp_secure', { u_id: user.id, q_id: qId, reward: reward });
+            refreshProfile();
+        }
+
         function takeSnapshot() {
-            const zone = document.getElementById('final-card');
-            html2canvas(zone, { backgroundColor: '#000', scale: 2, useCORS: true }).then(canvas => {
+            html2canvas(document.getElementById('final-card'), { backgroundColor: '#000', scale: 2 }).then(canvas => {
                 const link = document.createElement('a');
-                link.download = `Koreli_Agent_${Date.now()}.png`;
-                link.href = canvas.toDataURL("image/png");
+                link.download = `Koreli_Agent.png`;
+                link.href = canvas.toDataURL();
                 link.click();
             });
         }
 
-        // --- NAVIGATION ---
-        function switchTab(viewId, el) {
+        function switchTab(id, el) {
             document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
             document.querySelectorAll('.nav-os div').forEach(n => n.classList.remove('active'));
-            document.getElementById(viewId).classList.add('active');
+            document.getElementById(id).classList.add('active');
             el.classList.add('active');
-            if(viewId === 'v-profile') refreshProfile();
+            if(id === 'v-profile') refreshProfile();
         }
 
         async function logout() { await sup.auth.signOut(); location.reload(); }
 
-        // LANCEMENT
         boot();
     </script>
 </body>
 </html>
 
-                                
+                    
