@@ -2,104 +2,198 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>KORELI TITAN | v24.1</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>KORELI OS | TITAN</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Syncopate:wght@700&family=Montserrat:wght@300;600;900&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
-        :root { --gold: #FFD700; --bg: #000; --glass: rgba(255, 255, 255, 0.08); --gradient: linear-gradient(135deg, #FFD700 0%, #b8860b 100%); }
-        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: var(--bg); color: #fff; font-family: 'Montserrat', sans-serif; overflow: hidden; }
-        .search-container { position: fixed; top: 15px; left: 50%; transform: translateX(-50%); width: 92%; z-index: 2000; }
-        .search-bar { width: 100%; background: rgba(0,0,0,0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255,215,0,0.3); padding: 12px 20px; border-radius: 30px; color: #fff; outline: none; box-sizing: border-box; }
-        #main-viewport { height: 100vh; overflow-y: scroll; scroll-snap-type: y mandatory; scrollbar-width: none; }
-        #main-viewport::-webkit-scrollbar { display: none; }
-        .short-slide { height: 100vh; width: 100%; scroll-snap-align: start; position: relative; background: #000; }
-        video { width: 100%; height: 100%; object-fit: cover; filter: brightness(0.8); }
-        .side-actions { position: absolute; right: 15px; bottom: 180px; display: flex; flex-direction: column; gap: 15px; z-index: 100; align-items: center; }
-        .action-btn { width: 50px; height: 50px; background: var(--glass); border: 1px solid rgba(255,255,255,0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; backdrop-filter: blur(10px); font-size: 1.2rem; }
-        .action-btn.liked { color: var(--gold); border-color: var(--gold); box-shadow: 0 0 15px rgba(255,215,0,0.3); }
-        .nav-bar { position: fixed; bottom: 0; width: 100%; height: 75px; background: rgba(0,0,0,0.9); border-top: 1px solid #111; display: flex; justify-content: space-around; align-items: center; z-index: 1000; }
-        .nav-btn { color: #555; font-size: 0.6rem; font-family: 'Syncopate'; cursor: pointer; }
-        .nav-btn.active { color: var(--gold); }
-        .nav-plus { width: 45px; height: 45px; background: var(--gradient); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #000; font-size: 1.5rem; }
-        .page { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 3000; display: none; flex-direction: column; padding: 25px; box-sizing: border-box; }
-        .page.active { display: flex; }
+        :root { --accent: #00f2ea; --bg: #000; --surface: #0a0a0a; --p: #FFD700; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { margin: 0; background: #000; color: white; font-family: 'Segoe UI', sans-serif; height: 100vh; overflow: hidden; }
+
+        /* VUES */
+        .view { position: absolute; inset: 0; opacity: 0; transition: 0.3s; pointer-events: none; visibility: hidden; }
+        .view.active { opacity: 1; pointer-events: auto; visibility: visible; z-index: 10; }
+
+        /* FEED */
+        #feed { height: 100vh; overflow-y: scroll; scroll-snap-type: y mandatory; scrollbar-width: none; }
+        .unit { height: 100vh; scroll-snap-align: start; position: relative; background: #000; }
+        video { width: 100%; height: 100%; object-fit: cover; }
+
+        /* CARTE AGENT (HIDDEN FOR SCREENSHOT) */
+        #capture-zone { position: absolute; left: -9999px; top: 0; }
+        .agent-card {
+            width: 320px; padding: 30px; background: #050505; border: 2px solid var(--accent);
+            border-radius: 20px; text-align: center; color: white;
+        }
+
+        /* UI ELEMENTS */
+        .rank-tag { background: var(--accent); color: #000; font-size: 10px; font-weight: 900; padding: 5px 12px; border-radius: 4px; text-transform: uppercase; }
+        .quest-card { background: #111; padding: 15px; border-radius: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #222; }
+        .quest-card.done { border-color: #00f2ea33; opacity: 0.5; background: #001a1a; }
+
+        .nav-os { position: fixed; bottom: 0; width: 100%; height: 70px; background: rgba(0,0,0,0.95); display: flex; justify-content: space-around; align-items: center; z-index: 1000; border-top: 1px solid #1a1a1a; }
+        .nav-os i { color: #333; font-size: 20px; }
+        .nav-os .active i { color: var(--accent); text-shadow: 0 0 10px var(--accent); }
+
+        #loader { position: fixed; inset: 0; background: #000; z-index: 9999; display: flex; align-items: center; justify-content: center; color: var(--accent); font-size: 10px; letter-spacing: 2px; }
     </style>
 </head>
 <body>
-    <div class="search-container"><input type="text" id="global-search" class="search-bar" placeholder="RECHERCHER..." oninput="App.search(this.value)"></div>
-    <div id="main-viewport"></div>
-    <nav class="nav-bar">
-        <div class="nav-btn active" onclick="App.close()">FLUX</div>
-        <div class="nav-plus" onclick="App.open('upload')">+</div>
-        <div class="nav-btn" onclick="App.open('me')">PROFIL</div>
-    </nav>
-    <div id="page-upload" class="page">
-        <h2 style="font-family:'Syncopate'; color:var(--gold);">NOUVELLE MISSION</h2>
-        <input type="text" id="post-desc" placeholder="Briefing..." style="background:#111; border:none; padding:18px; color:#fff; border-radius:12px; margin-bottom:15px; width:100%; box-sizing:border-box;">
-        <input type="file" id="post-file" accept="video/*">
-        <button id="btn-publish" onclick="App.uploadVideo()" style="background:var(--gradient); border:none; padding:20px; font-weight:900; border-radius:15px; margin-top:30px; width:100%;">PUBLIER</button>
-        <button onclick="App.close()" style="margin-top:20px; background:none; border:none; color:#444; width:100%;">ANNULER</button>
+
+    <div id="loader">ENCRYPTING_SESSION...</div>
+
+    <div id="capture-zone">
+        <div id="final-card" class="agent-card">
+            <div style="font-size: 9px; letter-spacing: 4px; color: #00f2ea; margin-bottom: 20px;">KORELI_NETWORK_AUTH</div>
+            <div style="font-size: 50px; margin-bottom: 10px;">🛡️</div>
+            <h2 id="card-name" style="margin: 10px 0; letter-spacing: 1px;">AGENT</h2>
+            <div id="card-rank" class="rank-tag" style="margin-bottom: 25px;">RECRUE</div>
+            <div style="text-align: left; border-top: 1px solid #222; padding-top: 15px;">
+                <div style="font-size: 9px; color: #666;">XP_LEVEL</div>
+                <div id="card-xp" style="font-size: 22px; font-weight: 900; color: #00f2ea;">0 XP</div>
+            </div>
+        </div>
     </div>
+
+    <div id="v-feed" class="view active"><div id="feed"></div></div>
+
+    <div id="v-profile" class="view" style="padding: 50px 20px; overflow-y: auto; padding-bottom: 100px;">
+        <div style="background:#0a0a0a; padding:30px; border-radius:25px; text-align:center; border:1px solid #222;">
+            <div style="font-size:40px; color:var(--accent); margin-bottom:10px;"><i class="fa-solid fa-user-secret"></i></div>
+            <h2 id="prof-user" style="margin:5px 0;">...</h2>
+            <div id="prof-rank-tag" class="rank-tag">RECRUE</div>
+            
+            <button onclick="takeSnapshot()" style="width:100%; margin-top:25px; padding:15px; background:var(--accent); color:#000; border:none; border-radius:12px; font-weight:900; cursor:pointer;">
+                <i class="fa-solid fa-camera-retro"></i> GÉNÉRER CARTE AGENT
+            </button>
+        </div>
+
+        <h4 style="color:var(--accent); margin:30px 0 15px; font-size: 11px; letter-spacing:2px;">MISSIONS_QUOTIDIENNES</h4>
+        <div id="quest-list"></div>
+    </div>
+
+    <nav class="nav-os">
+        <div class="active" onclick="switchTab('v-feed', this)"><i class="fa-solid fa-ghost"></i></div>
+        <div onclick="switchTab('v-profile', this)"><i class="fa-solid fa-id-card"></i></div>
+    </nav>
+
     <script>
-        const App = {
-            config: { url: "https://ebykrodcycqcpcfuqpzi.supabase.co", key: "sb_publishable_j_DNfP9D_2K3uAzbb6-Giw_cWJJfR8_" },
-            client: null, user: null, allPosts: [],
-            async init() {
-                this.client = supabase.createClient(this.config.url, this.config.key);
-                const { data: { session } } = await this.client.auth.getSession();
-                if (session) { this.user = session.user; this.setupObserver(); await this.loadFeed(); }
-                else { console.log("Session requise"); }
-            },
-            setupObserver() {
-                this.observer = new IntersectionObserver(entries => {
-                    entries.forEach(e => {
-                        const v = e.target.querySelector('video');
-                        if (e.isIntersecting) v.play().catch(()=>{}); else v.pause();
-                    });
-                }, { threshold: 0.8 });
-            },
-            async loadFeed() {
-                const { data } = await this.client.from('posts').select('*, profiles(username), likes(user_id)').order('created_at', {ascending: false});
-                this.allPosts = data;
-                this.renderFeed(data);
-            },
-            renderFeed(posts) {
-                const v = document.getElementById('main-viewport');
-                v.innerHTML = posts.map(p => `
-                    <div class="short-slide">
-                        <div class="side-actions">
-                            <div class="action-btn" onclick="App.toggleLike('${p.id}', this)">🔥</div>
-                            <span style="font-size:0.6rem; color:var(--gold); font-weight:900;">${p.likes?.length || 0}</span>
+        // --- ⚙️ CORE CONFIG ---
+        const sup = supabase.createClient("TON_URL", "TA_CLE_ANON");
+
+        function getRank(xp) {
+            if (xp >= 1000) return "COMMANDANT";
+            if (xp >= 100) return "ÉLITE";
+            if (xp >= 10) return "AGENT";
+            return "RECRUE";
+        }
+
+        // --- 🚀 APP ENGINE ---
+        async function boot() {
+            const { data: posts } = await sup.from('posts').select('*').order('created_at', {ascending: false});
+            if(posts) {
+                document.getElementById('feed').innerHTML = posts.map(p => `
+                    <div class="unit">
+                        <video loop playsinline muted src="${p.image_url}" onclick="this.muted=!this.muted; this.play();"></video>
+                        <div style="position:absolute; bottom:110px; left:20px; z-index:100; pointer-events:none;">
+                            <div class="rank-tag">${getRank(p.likes || 0)}</div>
+                            <h3 style="margin:10px 0; text-shadow: 0 2px 10px #000;">${p.content}</h3>
                         </div>
-                        <video loop playsinline muted><source src="${p.image_url}" type="video/mp4"></video>
-                        <div style="position:absolute; bottom:110px; left:20px;">
-                            <b style="color:var(--gold)">@${p.profiles?.username}</b>
-                            <p style="font-size:0.85rem;">${p.content}</p>
+                    </div>
+                `).join('');
+                setupIntersection();
+            }
+            document.getElementById('loader').style.display = 'none';
+        }
+
+        function setupIntersection() {
+            const obs = new IntersectionObserver(es => {
+                es.forEach(e => {
+                    const v = e.target.querySelector('video');
+                    e.isIntersecting ? v.play().catch(()=>{}) : v.pause();
+                });
+            }, { threshold: 0.6 });
+            document.querySelectorAll('.unit').forEach(u => obs.observe(u));
+        }
+
+        // --- 📊 PROFILE & XP ---
+        async function refreshProfile() {
+            const { data: { user } } = await sup.auth.getUser();
+            const { data: profs } = await sup.from('profiles').select('*').eq('id', user.id);
+            const xp = (profs && profs[0]) ? profs[0].total_xp : 0;
+            const rank = getRank(xp);
+
+            // UI Update
+            const name = user.email.split('@')[0].toUpperCase();
+            document.getElementById('prof-user').innerText = name;
+            document.getElementById('prof-rank-tag').innerText = rank;
+            
+            // Sync Card (Hidden)
+            document.getElementById('card-name').innerText = name;
+            document.getElementById('card-rank').innerText = rank;
+            document.getElementById('card-xp').innerText = xp + " XP";
+
+            // Quests Logic
+            const today = new Date().toISOString().split('T')[0];
+            const { data: quests } = await sup.from('quests').select('*');
+            const { data: completed } = await sup.from('user_quests').select('quest_id').eq('user_id', user.id).eq('completed_at', today);
+            
+            const doneIds = completed ? completed.map(c => c.quest_id) : [];
+
+            document.getElementById('quest-list').innerHTML = quests.map(q => {
+                const isDone = doneIds.includes(q.id);
+                return `
+                    <div class="quest-card ${isDone ? 'done' : ''}" onclick="${isDone ? '' : `claimQuest('${q.id}', ${q.xp_reward})`}">
+                        <div>
+                            <div style="font-size:13px; font-weight:bold;">${q.title}</div>
+                            <div style="font-size:9px; color:${isDone ? '#00f2ea' : '#555'}">${isDone ? 'COMPLÉTÉE' : 'EN ATTENTE'}</div>
                         </div>
-                    </div>`).join('');
-                document.querySelectorAll('.short-slide').forEach(s => this.observer.observe(s));
-            },
-            search(query) {
-                const filtered = this.allPosts.filter(p => p.content.toLowerCase().includes(query.toLowerCase()));
-                this.renderFeed(filtered);
-            },
-            async uploadVideo() {
-                const file = document.getElementById('post-file').files[0];
-                const btn = document.getElementById('btn-publish');
-                if(!file) return alert("Vidéo requise");
-                btn.innerText = "TRANSFERT..."; btn.disabled = true;
-                const fileName = `${Date.now()}_${file.name}`;
-                await this.client.storage.from('videos').upload(fileName, file);
-                const { data: { publicUrl } } = this.client.storage.from('videos').getPublicUrl(fileName);
-                await this.client.from('posts').insert([{ user_id: this.user.id, content: document.getElementById('post-desc').value, image_url: publicUrl }]);
-                location.reload();
-            },
-            open(id) { document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); document.getElementById(`page-${id}`).classList.add('active'); },
-            close() { document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); }
-        };
-        App.init();
+                        <div style="color:var(--p); font-weight:900;">+${q.xp_reward} XP</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function claimQuest(qId, reward) {
+            const { data: { user } } = await sup.auth.getUser();
+            const { data: res } = await sup.rpc('claim_quest_xp_secure', { u_id: user.id, q_id: qId, reward: reward });
+            
+            if (res === 'SUCCESS') {
+                if(navigator.vibrate) navigator.vibrate([20, 50]);
+                refreshProfile();
+            } else {
+                alert("🔒 Mission déjà sécurisée pour aujourd'hui.");
+            }
+        }
+
+        // --- 📸 IMAGE GENERATOR ---
+        function takeSnapshot() {
+            const zone = document.getElementById('final-card');
+            html2canvas(zone, { 
+                backgroundColor: null,
+                scale: 2,
+                useCORS: true 
+            }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = `Koreli_Agent_${Date.now()}.png`;
+                link.href = canvas.toDataURL("image/png");
+                link.click();
+                alert("💎 Carte d'Agent générée ! Partage-la pour recruter ton escouade.");
+            });
+        }
+
+        function switchTab(id, el) {
+            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+            document.querySelectorAll('.nav-os div').forEach(n => n.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            el.classList.add('active');
+            if(id === 'v-profile') refreshProfile();
+        }
+
+        boot();
     </script>
 </body>
 </html>
-
