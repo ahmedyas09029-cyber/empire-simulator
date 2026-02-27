@@ -1,204 +1,591 @@
-  <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="fr">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>KORELI OS | APOCALYPSE</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        :root { --accent: #00f2ea; --bg: #000; --surface: #111; --glass: rgba(255,255,255,0.1); }
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
-        body { background: #000; color: white; font-family: 'Inter', sans-serif; height: 100vh; overflow: hidden; }
 
-        /* VUES */
-        .view { position: absolute; inset: 0; opacity: 0; transition: 0.3s; pointer-events: none; visibility: hidden; overflow-y: auto; }
-        .view.active { opacity: 1; pointer-events: auto; visibility: visible; z-index: 10; }
+<meta charset="UTF-8">
+<meta name="viewport"
+content="width=device-width, initial-scale=1">
 
-        /* FEED (YOUTUBE STYLE) */
-        #feed { height: 100vh; overflow-y: scroll; scroll-snap-type: y mandatory; scrollbar-width: none; }
-        .unit { height: 100vh; width: 100%; scroll-snap-align: start; position: relative; background: #000; }
-        video { width: 100%; height: 100%; object-fit: cover; pointer-events: all; }
-        
-        /* OVERLAYS */
-        .side-bar { position: absolute; right: 15px; bottom: 150px; display: flex; flex-direction: column; gap: 20px; z-index: 100; }
-        .icon-btn { background: none; border: none; color: white; text-align: center; }
-        .icon-btn i { font-size: 30px; display: block; margin-bottom: 5px; text-shadow: 0 2px 10px rgba(0,0,0,0.5); }
-        
-        /* UPLOAD & SETTINGS FORM */
-        .panel { background: var(--surface); padding: 25px; border-radius: 25px; margin: 20px; border: 1px solid #222; }
-        input, textarea { width: 100%; padding: 15px; background: #050505; border: 1px solid #333; color: white; border-radius: 12px; margin-bottom: 15px; }
-        .btn-action { width: 100%; padding: 15px; background: var(--accent); color: #000; border: none; border-radius: 12px; font-weight: 900; cursor: pointer; }
+<title>KORELI</title>
 
-        /* NAV BAR */
-        .nav-os { position: fixed; bottom: 0; width: 100%; height: 80px; background: rgba(0,0,0,0.9); display: flex; justify-content: space-around; align-items: center; z-index: 1000; border-top: 1px solid #1a1a1a; }
-        .nav-os div { color: #555; font-size: 22px; cursor: pointer; transition: 0.3s; }
-        .nav-os .active { color: var(--accent); transform: scale(1.2); }
-        .upload-center { background: var(--accent) !important; color: #000 !important; width: 50px; height: 50px; border-radius: 15px; display: flex; align-items: center; justify-content: center; transform: translateY(-5px); }
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-        /* HISTORIQUE & MISSIONS */
-        .list-item { background: #151515; padding: 15px; border-radius: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid var(--accent); }
-    </style>
+<style>
+
+body{
+margin:0;
+background:black;
+color:white;
+font-family:system-ui;
+overflow:hidden;
+}
+
+.view{
+display:none;
+position:absolute;
+width:100%;
+height:100%;
+overflow:auto;
+}
+
+.active{
+display:block;
+}
+
+#feed{
+height:100vh;
+overflow-y:scroll;
+scroll-snap-type:y mandatory;
+}
+
+.unit{
+height:100vh;
+scroll-snap-align:start;
+position:relative;
+}
+
+video{
+width:100%;
+height:100%;
+object-fit:cover;
+}
+
+.overlay{
+position:absolute;
+bottom:120px;
+left:10px;
+}
+
+.actions{
+position:absolute;
+right:10px;
+bottom:150px;
+}
+
+.nav{
+position:fixed;
+bottom:0;
+width:100%;
+height:70px;
+background:black;
+display:flex;
+justify-content:space-around;
+align-items:center;
+}
+
+.box{
+background:#111;
+margin:10px;
+padding:15px;
+border-radius:10px;
+}
+
+.btn{
+padding:15px;
+background:#00f2ea;
+border:none;
+width:100%;
+margin-top:10px;
+}
+
+input,textarea{
+width:100%;
+padding:15px;
+background:black;
+color:#00f2ea;
+border:1px solid #333;
+margin-bottom:10px;
+}
+
+.avatar{
+width:80px;
+height:80px;
+border-radius:50%;
+object-fit:cover;
+}
+
+.msg{
+background:#111;
+padding:10px;
+margin:5px;
+border-radius:10px;
+}
+
+</style>
+
 </head>
+
 <body>
 
-    <div id="v-feed" class="view active">
-        <div id="feed"></div>
-    </div>
 
-    <div id="v-post" class="view" style="padding-top: 50px;">
-        <div class="panel">
-            <h2 style="margin-bottom: 20px;"><i class="fa-solid fa-cloud-arrow-up"></i> NOUVEAU POST</h2>
-            <input type="text" id="post-url" placeholder="URL de la vidéo (mp4)...">
-            <textarea id="post-desc" placeholder="Légende de ton post..."></textarea>
-            <button class="btn-action" onclick="handlePost()">PUBLIER DANS LA MATRICE</button>
-        </div>
-    </div>
+<div id="auth">
 
-    <div id="v-profile" class="view" style="padding: 60px 20px;">
-        <div class="panel" style="text-align: center;">
-            <div id="avatar" style="font-size: 50px; margin-bottom: 10px;">👤</div>
-            <h2 id="user-name">AGENT_INCONNU</h2>
-            <p id="user-rank" style="color:var(--accent); font-weight: 800; font-size: 12px;"></p>
-        </div>
+<div class="box">
 
-        <h3><i class="fa-solid fa-bullseye"></i> MISSIONS DU JOUR</h3>
-        <div id="mission-list" style="margin-top: 15px;"></div>
+<h2>KORELI GLOBAL</h2>
 
-        <h3 style="margin-top: 30px;"><i class="fa-solid fa-clock-rotate-left"></i> HISTORIQUE XP</h3>
-        <div id="history-list" style="margin-top: 15px;"></div>
+<input id="email" placeholder="email">
 
-        <h3 style="margin-top: 30px;"><i class="fa-solid fa-gear"></i> PARAMÈTRES</h3>
-        <div class="panel">
-            <button class="btn-action" style="background: #222; color: white; margin-bottom: 10px;" onclick="alert('Thème Sombre Activé')">MODIFIER LE THÈME</button>
-            <button class="btn-action" style="background: #ff4444; color: white;" onclick="logout()">DÉCONNEXION</button>
-        </div>
-    </div>
+<input id="pass" type="password">
 
-    <nav class="nav-os">
-        <div class="active" onclick="switchTab('v-feed', this)"><i class="fa-solid fa-house"></i></div>
-        <div onclick="switchTab('v-post', this)" class="upload-center"><i class="fa-solid fa-plus"></i></div>
-        <div onclick="switchTab('v-profile', this)"><i class="fa-solid fa-user-gear"></i></div>
-    </nav>
+<button class="btn" onclick="login()">
+LOGIN
+</button>
 
-    <script>
-        const _URL = "https://ebykrodcycqcpcfuqpzi.supabase.co";
-        const _KEY = "sb_publishable_j_DNfP9D_2K3uAzbb6-Giw_cWJJfR8_";
-        const sup = supabase.createClient(_URL, _KEY);
+<button class="btn" onclick="signup()">
+SIGNUP
+</button>
 
-        // --- 📺 LECTEUR VIDÉO PRO ---
-        async function loadFeed() {
-            const { data: posts } = await sup.from('posts').select('*').order('created_at', {ascending: false});
-            const container = document.getElementById('feed');
-            
-            if (posts) {
-                container.innerHTML = posts.map(p => `
-                    <div class="unit">
-                        <video loop playsinline muted src="${p.image_url}" onclick="playPause(this)"></video>
-                        <div class="side-bar">
-                            <button class="icon-btn"><i class="fa-solid fa-heart"></i><span>${p.likes || 0}</span></button>
-                            <button class="icon-btn" onclick="shareCard()"><i class="fa-solid fa-share"></i></button>
-                        </div>
-                        <div style="position:absolute; bottom:100px; left:20px; pointer-events:none;">
-                            <h3 style="text-shadow: 2px 2px 10px #000;">@Agent_${p.user_id?.slice(0,4)}</h3>
-                            <p style="font-size:14px; opacity:0.8;">${p.content}</p>
-                        </div>
-                    </div>
-                `).join('');
-                initObserver();
-            }
-        }
+</div>
 
-        function playPause(v) {
-            if (v.paused) { v.play(); v.muted = false; }
-            else { v.pause(); }
-        }
+</div>
 
-        function initObserver() {
-            const obs = new IntersectionObserver(es => {
-                es.forEach(e => {
-                    const v = e.target.querySelector('video');
-                    if(e.isIntersecting) { v.play().catch(()=>{}); }
-                    else { v.pause(); }
-                });
-            }, { threshold: 0.8 });
-            document.querySelectorAll('.unit').forEach(u => obs.observe(u));
-        }
 
-        // --- 📤 SYSTÈME DE POST ---
-        async function handlePost() {
-            const url = document.getElementById('post-url').value;
-            const desc = document.getElementById('post-desc').value;
-            const { data: { user } } = await sup.auth.getUser();
 
-            if(!url || !user) return alert("Données manquantes !");
+<div id="home" class="view active">
 
-            const { error } = await sup.from('posts').insert([{ 
-                user_id: user.id, 
-                content: desc, 
-                image_url: url,
-                likes: 0
-            }]);
+<div id="feed"></div>
 
-            if(!error) {
-                alert("PUBLIÉ !");
-                location.reload();
-            }
-        }
+</div>
 
-        // --- 📊 PROFIL, MISSIONS & HISTORIQUE ---
-        async function loadProfile() {
-            const { data: { user } } = await sup.auth.getUser();
-            if(!user) return;
 
-            const { data: prof } = await sup.from('profiles').select('*').eq('id', user.id).single();
-            const xp = prof ? prof.total_xp : 0;
 
-            document.getElementById('user-name').innerText = user.email.split('@')[0].toUpperCase();
-            document.getElementById('user-rank').innerText = (xp >= 100 ? "COMMANDANT" : "RECRUE") + ` • ${xp} XP`;
+<div id="upload" class="view">
 
-            // Charger Missions
-            const { data: qs } = await sup.from('quests').select('*');
-            document.getElementById('mission-list').innerHTML = qs.map(q => `
-                <div class="list-item" onclick="claimXP('${q.id}', ${q.xp_reward})">
-                    <div><b>${q.title}</b><br><small>Mission quotidienne</small></div>
-                    <div style="color:var(--accent); font-weight:bold;">+${q.xp_reward} XP</div>
-                </div>
-            `).join('');
+<div class="box">
 
-            // Charger Historique
-            const { data: hist } = await sup.from('user_quests').select('*, quests(title)').eq('user_id', user.id).limit(5);
-            document.getElementById('history-list').innerHTML = hist?.map(h => `
-                <div class="list-item" style="border-left-color:#333; opacity:0.7;">
-                    <div>${h.quests?.title || 'Quête'}</div>
-                    <div style="font-size:10px;">${new Date(h.completed_at).toLocaleDateString()}</div>
-                </div>
-            `).join('') || "Aucun historique.";
-        }
+<h3>Upload vidéo</h3>
 
-        async function claimXP(qId, amt) {
-            const { data: { user } } = await sup.auth.getUser();
-            const { data: res } = await sup.rpc('claim_quest_xp_secure', { u_id: user.id, q_id: qId, reward: amt });
-            if(res === 'SUCCESS') { alert("XP GAGNÉ !"); loadProfile(); }
-            else alert("Déjà fait aujourd'hui !");
-        }
+<input type="file" id="file">
 
-        // --- NAVIGATION ---
-        function switchTab(id, el) {
-            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-            document.querySelectorAll('.nav-os div').forEach(n => n.classList.remove('active'));
-            document.getElementById(id).classList.add('active');
-            el.classList.add('active');
-            if(id === 'v-profile') loadProfile();
-        }
+<textarea id="desc"
+placeholder="Description"></textarea>
 
-        async function logout() { await sup.auth.signOut(); location.reload(); }
+<button class="btn"
+onclick="uploadVideo()">
 
-        loadFeed();
-    </script>
+UPLOAD
+
+</button>
+
+</div>
+
+</div>
+
+
+
+<div id="profile" class="view">
+
+<div class="box">
+
+<img id="avatar"
+class="avatar">
+
+<input type="file"
+id="avatarFile">
+
+<button class="btn"
+onclick="uploadAvatar()">
+
+Photo profil
+
+</button>
+
+<h3 id="username"></h3>
+
+<button class="btn"
+onclick="logout()">
+
+Logout
+
+</button>
+
+</div>
+
+</div>
+
+
+
+<div id="search" class="view">
+
+<div class="box">
+
+<input id="searchInput"
+placeholder="Rechercher">
+
+<button class="btn"
+onclick="searchUser()">
+
+Search
+
+</button>
+
+<div id="results"></div>
+
+</div>
+
+</div>
+
+
+
+<div id="chat" class="view">
+
+<div class="box">
+
+<div id="messages"></div>
+
+<input id="msgText">
+
+<button class="btn"
+onclick="sendMsg()">
+
+Send
+
+</button>
+
+</div>
+
+</div>
+
+
+
+<div class="nav">
+
+<div onclick="go('home')">
+🏠
+</div>
+
+<div onclick="go('search')">
+🔎
+</div>
+
+<div onclick="go('upload')">
+➕
+</div>
+
+<div onclick="go('chat')">
+💬
+</div>
+
+<div onclick="go('profile')">
+👤
+</div>
+
+</div>
+
+
+
+<script>
+
+
+const URL="https://ebykrodcycqcpcfuqpzi.supabase.co";
+
+const KEY="TA_CLE_SUPABASE";
+
+const db=supabase.createClient(URL,KEY);
+
+let user;
+let chatUser;
+
+
+
+db.auth.onAuthStateChange((e,s)=>{
+
+user=s?.user;
+
+if(user){
+
+auth.style.display="none";
+
+loadFeed();
+
+loadProfile();
+
+}
+
+});
+
+
+
+async function login(){
+
+await db.auth.signInWithPassword({
+
+email:email.value,
+
+password:pass.value
+
+});
+
+}
+
+
+
+async function signup(){
+
+await db.auth.signUp({
+
+email:email.value,
+
+password:pass.value
+
+});
+
+}
+
+
+
+function go(v){
+
+document.querySelectorAll(".view")
+
+.forEach(x=>x.classList.remove("active"));
+
+document.getElementById(v)
+
+.classList.add("active");
+
+}
+
+
+
+async function loadFeed(){
+
+let {data}=await db.from("posts")
+
+.select("*")
+
+.order("created_at",{ascending:false})
+
+.limit(50);
+
+
+feed.innerHTML=data.map(p=>`
+
+<div class="unit">
+
+<video autoplay muted loop
+
+src="${p.image_url}">
+
+</video>
+
+<div class="overlay">
+
+${p.content}
+
+</div>
+
+<div class="actions">
+
+<div onclick="like('${p.id}')">
+
+❤️ ${p.likes||0}
+
+</div>
+
+<div onclick="openChat('${p.user_id}')">
+
+💬
+
+</div>
+
+</div>
+
+</div>
+
+`).join("");
+
+}
+
+
+
+async function like(id){
+
+await db.rpc('increment_likes',{row_id:id});
+
+}
+
+
+
+async function uploadVideo(){
+
+let f=file.files[0];
+
+let name=Date.now()+".mp4";
+
+
+await db.storage
+
+.from("videos")
+
+.upload(name,f);
+
+
+let url=URL+
+
+"/storage/v1/object/public/videos/"+name;
+
+
+await db.from("posts")
+
+.insert({
+
+user_id:user.id,
+
+image_url:url,
+
+content:desc.value,
+
+likes:0
+
+});
+
+
+loadFeed();
+
+go("home");
+
+}
+
+
+
+async function uploadAvatar(){
+
+let f=avatarFile.files[0];
+
+let name=user.id+".png";
+
+
+await db.storage
+
+.from("avatars")
+
+.upload(name,f,{upsert:true});
+
+
+avatar.src=URL+
+
+"/storage/v1/object/public/avatars/"+name;
+
+}
+
+
+
+async function loadProfile(){
+
+username.innerText=user.email;
+
+avatar.src=URL+
+
+"/storage/v1/object/public/avatars/"+user.id+".png";
+
+}
+
+
+
+async function searchUser(){
+
+let {data}=await db.from("profiles")
+
+.select("*");
+
+
+results.innerHTML=data
+
+.filter(u=>u.email.includes(searchInput.value))
+
+.map(u=>
+
+`<div class="box">
+
+${u.email}
+
+<button onclick="openChat('${u.id}')">
+
+Chat
+
+</button>
+
+</div>`
+
+).join("");
+
+}
+
+
+
+function openChat(id){
+
+chatUser=id;
+
+go("chat");
+
+loadMsg();
+
+}
+
+
+
+async function loadMsg(){
+
+let {data}=await db.from("messages")
+
+.select("*")
+
+.eq("to",chatUser);
+
+
+messages.innerHTML=data.map(m=>
+
+`<div class="msg">
+
+${m.text}
+
+</div>`
+
+).join("");
+
+}
+
+
+
+async function sendMsg(){
+
+await db.from("messages")
+
+.insert({
+
+from:user.id,
+
+to:chatUser,
+
+text:msgText.value
+
+});
+
+loadMsg();
+
+}
+
+
+
+async function logout(){
+
+await db.auth.signOut();
+
+location.reload();
+
+}
+
+
+</script>
+
 </body>
+
 </html>
+
 
 
 
