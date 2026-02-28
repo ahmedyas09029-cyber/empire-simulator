@@ -1,590 +1,211 @@
 <!DOCTYPE html>
 <html lang="fr">
-
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KORELI GLOBAL | ENTERPRISE</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --primary: #00f2ea;
+            --secondary: #ff006e;
+            --dark: #050505;
+            --card: #121212;
+            --border: #222;
+        }
 
-<meta charset="UTF-8">
-<meta name="viewport"
-content="width=device-width, initial-scale=1">
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { background: var(--dark); color: white; font-family: 'Inter', sans-serif; height: 100vh; overflow: hidden; }
 
-<title>KORELI</title>
+        /* VUES */
+        .view { display: none; height: 100vh; width: 100vw; position: absolute; }
+        .view.active { display: flex; }
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+        /* FEED SHORTS */
+        #videoFeed { height: 100vh; width: 100%; overflow-y: scroll; scroll-snap-type: y mandatory; scrollbar-width: none; }
+        #videoFeed::-webkit-scrollbar { display: none; }
+        .video-card { height: 100vh; width: 100%; scroll-snap-align: start; position: relative; background: #000; display: flex; align-items: center; }
+        video { width: 100%; height: 100%; object-fit: cover; }
 
-<style>
+        /* SIDEBAR PRO */
+        .sidebar { position: fixed; right: 0; top: 0; width: 70px; height: 100%; background: rgba(0,0,0,0.8); border-left: 1px solid var(--border); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 25px; z-index: 100; backdrop-filter: blur(10px); }
+        .side-icon { width: 45px; height: 45px; border-radius: 12px; background: var(--card); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.3s; font-size: 20px; }
+        .side-icon:hover { border-color: var(--primary); color: var(--primary); transform: scale(1.1); }
+        .side-icon.active { background: var(--primary); color: #000; }
 
-body{
-margin:0;
-background:black;
-color:white;
-font-family:system-ui;
-overflow:hidden;
-}
+        /* PANELS COULISSANTS */
+        .panel { display: none; position: fixed; right: 70px; top: 0; width: 320px; height: 100%; background: var(--card); border-left: 1px solid var(--border); z-index: 90; padding: 25px; box-shadow: -10px 0 30px rgba(0,0,0,0.5); animation: slide 0.3s ease; }
+        @keyframes slide { from { transform: translateX(100%); } to { transform: translateX(0); } }
+        .panel.active { display: block; }
 
-.view{
-display:none;
-position:absolute;
-width:100%;
-height:100%;
-overflow:auto;
-}
-
-.active{
-display:block;
-}
-
-#feed{
-height:100vh;
-overflow-y:scroll;
-scroll-snap-type:y mandatory;
-}
-
-.unit{
-height:100vh;
-scroll-snap-align:start;
-position:relative;
-}
-
-video{
-width:100%;
-height:100%;
-object-fit:cover;
-}
-
-.overlay{
-position:absolute;
-bottom:120px;
-left:10px;
-}
-
-.actions{
-position:absolute;
-right:10px;
-bottom:150px;
-}
-
-.nav{
-position:fixed;
-bottom:0;
-width:100%;
-height:70px;
-background:black;
-display:flex;
-justify-content:space-around;
-align-items:center;
-}
-
-.box{
-background:#111;
-margin:10px;
-padding:15px;
-border-radius:10px;
-}
-
-.btn{
-padding:15px;
-background:#00f2ea;
-border:none;
-width:100%;
-margin-top:10px;
-}
-
-input,textarea{
-width:100%;
-padding:15px;
-background:black;
-color:#00f2ea;
-border:1px solid #333;
-margin-bottom:10px;
-}
-
-.avatar{
-width:80px;
-height:80px;
-border-radius:50%;
-object-fit:cover;
-}
-
-.msg{
-background:#111;
-padding:10px;
-margin:5px;
-border-radius:10px;
-}
-
-</style>
-
+        /* INPUTS & BOUTONS */
+        input, textarea { width: 100%; padding: 12px; background: #000; border: 1px solid var(--border); border-radius: 10px; color: white; margin-bottom: 15px; outline: none; }
+        input:focus { border-color: var(--primary); }
+        .btn-main { width: 100%; padding: 15px; background: linear-gradient(135deg, var(--primary), var(--secondary)); border: none; border-radius: 12px; font-weight: 900; cursor: pointer; color: #000; text-transform: uppercase; letter-spacing: 1px; }
+        
+        /* AUTH DESIGN */
+        .auth-container { background: var(--card); padding: 40px; border-radius: 25px; border: 1px solid var(--border); width: 90%; max-width: 400px; text-align: center; }
+    </style>
 </head>
-
 <body>
 
-
-<div id="auth">
-
-<div class="box">
-
-<h2>KORELI GLOBAL</h2>
-
-<input id="email" placeholder="email">
-
-<input id="pass" type="password">
-
-<button class="btn" onclick="login()">
-LOGIN
-</button>
-
-<button class="btn" onclick="signup()">
-SIGNUP
-</button>
-
-</div>
-
-</div>
-
-
-
-<div id="home" class="view active">
-
-<div id="feed"></div>
-
-</div>
-
-
-
-<div id="upload" class="view">
-
-<div class="box">
-
-<h3>Upload vidéo</h3>
-
-<input type="file" id="file">
-
-<textarea id="desc"
-placeholder="Description"></textarea>
-
-<button class="btn"
-onclick="uploadVideo()">
-
-UPLOAD
-
-</button>
-
-</div>
-
-</div>
-
-
-
-<div id="profile" class="view">
-
-<div class="box">
-
-<img id="avatar"
-class="avatar">
-
-<input type="file"
-id="avatarFile">
-
-<button class="btn"
-onclick="uploadAvatar()">
-
-Photo profil
-
-</button>
-
-<h3 id="username"></h3>
-
-<button class="btn"
-onclick="logout()">
-
-Logout
-
-</button>
-
-</div>
-
-</div>
-
-
-
-<div id="search" class="view">
-
-<div class="box">
-
-<input id="searchInput"
-placeholder="Rechercher">
-
-<button class="btn"
-onclick="searchUser()">
-
-Search
-
-</button>
-
-<div id="results"></div>
-
-</div>
-
-</div>
-
-
-
-<div id="chat" class="view">
-
-<div class="box">
-
-<div id="messages"></div>
-
-<input id="msgText">
-
-<button class="btn"
-onclick="sendMsg()">
-
-Send
-
-</button>
-
-</div>
-
-</div>
-
-
-
-<div class="nav">
-
-<div onclick="go('home')">
-🏠
-</div>
-
-<div onclick="go('search')">
-🔎
-</div>
-
-<div onclick="go('upload')">
-➕
-</div>
-
-<div onclick="go('chat')">
-💬
-</div>
-
-<div onclick="go('profile')">
-👤
-</div>
-
-</div>
-
-
-
-<script>
-
-
-const URL="https://ebykrodcycqcpcfuqpzi.supabase.co";
-
-const KEY="TA_CLE_SUPABASE";
-
-const db=supabase.createClient(URL,KEY);
-
-let user;
-let chatUser;
-
-
-
-db.auth.onAuthStateChange((e,s)=>{
-
-user=s?.user;
-
-if(user){
-
-auth.style.display="none";
-
-loadFeed();
-
-loadProfile();
-
-}
-
-});
-
-
-
-async function login(){
-
-await db.auth.signInWithPassword({
-
-email:email.value,
-
-password:pass.value
-
-});
-
-}
-
-
-
-async function signup(){
-
-await db.auth.signUp({
-
-email:email.value,
-
-password:pass.value
-
-});
-
-}
-
-
-
-function go(v){
-
-document.querySelectorAll(".view")
-
-.forEach(x=>x.classList.remove("active"));
-
-document.getElementById(v)
-
-.classList.add("active");
-
-}
-
-
-
-async function loadFeed(){
-
-let {data}=await db.from("posts")
-
-.select("*")
-
-.order("created_at",{ascending:false})
-
-.limit(50);
-
-
-feed.innerHTML=data.map(p=>`
-
-<div class="unit">
-
-<video autoplay muted loop
-
-src="${p.image_url}">
-
-</video>
-
-<div class="overlay">
-
-${p.content}
-
-</div>
-
-<div class="actions">
-
-<div onclick="like('${p.id}')">
-
-❤️ ${p.likes||0}
-
-</div>
-
-<div onclick="openChat('${p.user_id}')">
-
-💬
-
-</div>
-
-</div>
-
-</div>
-
-`).join("");
-
-}
-
-
-
-async function like(id){
-
-await db.rpc('increment_likes',{row_id:id});
-
-}
-
-
-
-async function uploadVideo(){
-
-let f=file.files[0];
-
-let name=Date.now()+".mp4";
-
-
-await db.storage
-
-.from("videos")
-
-.upload(name,f);
-
-
-let url=URL+
-
-"/storage/v1/object/public/videos/"+name;
-
-
-await db.from("posts")
-
-.insert({
-
-user_id:user.id,
-
-image_url:url,
-
-content:desc.value,
-
-likes:0
-
-});
-
-
-loadFeed();
-
-go("home");
-
-}
-
-
-
-async function uploadAvatar(){
-
-let f=avatarFile.files[0];
-
-let name=user.id+".png";
-
-
-await db.storage
-
-.from("avatars")
-
-.upload(name,f,{upsert:true});
-
-
-avatar.src=URL+
-
-"/storage/v1/object/public/avatars/"+name;
-
-}
-
-
-
-async function loadProfile(){
-
-username.innerText=user.email;
-
-avatar.src=URL+
-
-"/storage/v1/object/public/avatars/"+user.id+".png";
-
-}
-
-
-
-async function searchUser(){
-
-let {data}=await db.from("profiles")
-
-.select("*");
-
-
-results.innerHTML=data
-
-.filter(u=>u.email.includes(searchInput.value))
-
-.map(u=>
-
-`<div class="box">
-
-${u.email}
-
-<button onclick="openChat('${u.id}')">
-
-Chat
-
-</button>
-
-</div>`
-
-).join("");
-
-}
-
-
-
-function openChat(id){
-
-chatUser=id;
-
-go("chat");
-
-loadMsg();
-
-}
-
-
-
-async function loadMsg(){
-
-let {data}=await db.from("messages")
-
-.select("*")
-
-.eq("to",chatUser);
-
-
-messages.innerHTML=data.map(m=>
-
-`<div class="msg">
-
-${m.text}
-
-</div>`
-
-).join("");
-
-}
-
-
-
-async function sendMsg(){
-
-await db.from("messages")
-
-.insert({
-
-from:user.id,
-
-to:chatUser,
-
-text:msgText.value
-
-});
-
-loadMsg();
-
-}
-
-
-
-async function logout(){
-
-await db.auth.signOut();
-
-location.reload();
-
-}
-
-
-</script>
-
+    <div id="view-auth" class="view active items-center justify-center">
+        <div class="auth-container">
+            <h1 class="text-4xl font-black mb-2 italic">KORELI<span class="text-[#00f2ea]">.</span></h1>
+            <p class="text-gray-500 mb-8 text-sm uppercase tracking-widest">Global Network</p>
+            <input type="email" id="auth-email" placeholder="Identifiant (Email)">
+            <input type="password" id="auth-pass" placeholder="Mot de passe">
+            <button class="btn-main mb-4" onclick="authAction('login')">Accéder au Nexus</button>
+            <button class="text-xs text-gray-400 hover:text-white" onclick="authAction('signup')">Créer un nouvel agent</button>
+        </div>
+    </div>
+
+    <div id="view-app" class="view">
+        
+        <div id="videoFeed"></div>
+
+        <div class="sidebar">
+            <div class="side-icon" onclick="openPanel('upload')">➕</div>
+            <div class="side-icon" onclick="openPanel('chat')">💬</div>
+            <div class="side-icon" onclick="openPanel('search')">🔎</div>
+            <div class="side-icon" onclick="openPanel('profile')">👤</div>
+            <div class="side-icon text-sm" onclick="closeAllPanels()">🏠</div>
+        </div>
+
+        <div id="panel-upload" class="panel">
+            <h2 class="text-xl font-bold mb-6">DÉPLOYER VIDÉO</h2>
+            <input type="file" id="file-input" accept="video/*">
+            <textarea id="video-desc" rows="4" placeholder="Description de la mission..."></textarea>
+            <button class="btn-main" id="btn-up" onclick="processUpload()">PUBLIER MAINTENANT</button>
+        </div>
+
+        <div id="panel-chat" class="panel">
+            <h2 class="text-xl font-bold mb-6">MESSAGERIE</h2>
+            <div id="chat-box" class="h-80 overflow-y-auto mb-4 border-b border-[#222]"></div>
+            <input id="msg-input" placeholder="Message privé...">
+            <button class="btn-main text-sm p-3" onclick="sendMessage()">ENVOYER</button>
+        </div>
+
+        <div id="panel-search" class="panel">
+            <h2 class="text-xl font-bold mb-6">RECHERCHE AGENTS</h2>
+            <input type="text" placeholder="Nom de l'agent..." oninput="filterUsers(this.value)">
+            <div id="search-results" class="mt-4"></div>
+        </div>
+
+        <div id="panel-profile" class="panel">
+            <h2 class="text-xl font-bold mb-6">VOTRE PROFIL</h2>
+            <div class="p-4 bg-black rounded-xl mb-4 text-center">
+                <p id="prof-id" class="text-[#00f2ea] font-mono text-sm"></p>
+                <p id="prof-xp" class="text-2xl font-black mt-2">0 XP</p>
+            </div>
+            <button class="btn-main" style="background: #ff4444; color: white;" onclick="logout()">DÉCONNEXION</button>
+        </div>
+
+    </div>
+
+    <script>
+        // CONFIGURATION SUPABASE RÉELLE (PROJET: wfjq...)
+        const _URL = "https://wfjqqbtrfacjzartehgm.supabase.co";
+        const _KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndmanFxYnRyZmFjanphcnRlaGdtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIyNjQ4MTYsImV4cCI6MjA4Nzg0MDgxNn0.qjRr11XzPYQpYdfiI1XGjVtPEPrUzWvLc4YP1e6Nwzo";
+        const db = supabase.createClient(_URL, _KEY);
+
+        let currentUser = null;
+
+        // GESTION AUTHENTIFICATION
+        db.auth.onAuthStateChange((event, session) => {
+            if (session) {
+                currentUser = session.user;
+                document.getElementById('view-auth').classList.remove('active');
+                document.getElementById('view-app').classList.add('active');
+                document.getElementById('prof-id').innerText = currentUser.email;
+                loadFeed();
+            }
+        });
+
+        async function authAction(type) {
+            const email = document.getElementById('auth-email').value;
+            const pass = document.getElementById('auth-pass').value;
+            const { error } = (type === 'login') 
+                ? await db.auth.signInWithPassword({ email, password: pass })
+                : await db.auth.signUp({ email, password: pass });
+            if (error) alert(error.message);
+        }
+
+        // NAVIGATION PANELS
+        function openPanel(name) {
+            closeAllPanels();
+            document.getElementById('panel-' + name).classList.add('active');
+        }
+
+        function closeAllPanels() {
+            document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+        }
+
+        // CHARGEMENT DU FEED
+        async function loadFeed() {
+            const { data, error } = await db.from('posts').select('*').order('created_at', { ascending: false });
+            const container = document.getElementById('videoFeed');
+            if (data) {
+                container.innerHTML = data.map(p => `
+                    <div class="video-card">
+                        <video loop playsinline muted src="${p.image_url}" onclick="this.muted=!this.muted; this.play()"></video>
+                        <div class="absolute bottom-24 left-6 z-50">
+                            <h3 class="text-[#00f2ea] font-black text-lg">@AGENT_${p.user_id.slice(0,4).toUpperCase()}</h3>
+                            <p class="text-sm opacity-80 max-w-xs">${p.content || ''}</p>
+                        </div>
+                    </div>
+                `).join('');
+                initObserver();
+            }
+        }
+
+        function initObserver() {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(e => {
+                    const v = e.target.querySelector('video');
+                    if (v) e.isIntersecting ? v.play().catch(()=>{}) : v.pause();
+                });
+            }, { threshold: 0.7 });
+            document.querySelectorAll('.video-card').forEach(c => observer.observe(c));
+        }
+
+        // UPLOAD SYSTÈME
+        async function processUpload() {
+            const file = document.getElementById('file-input').files[0];
+            const desc = document.getElementById('video-desc').value;
+            const btn = document.getElementById('btn-up');
+
+            if (!file) return alert("Sélectionnez un fichier MP4 !");
+            
+            btn.innerText = "UPLOAD EN COURS...";
+            btn.disabled = true;
+
+            const name = Date.now() + ".mp4";
+            const { data, error: upErr } = await db.storage.from('videos').upload(name, file);
+
+            if (upErr) {
+                alert("Erreur Storage: " + upErr.message);
+                btn.disabled = false;
+                return;
+            }
+
+            const videoUrl = `${_URL}/storage/v1/object/public/videos/${name}`;
+            await db.from('posts').insert({
+                user_id: currentUser.id,
+                image_url: videoUrl,
+                content: desc
+            });
+
+            alert("DÉPLOIEMENT RÉUSSI !");
+            location.reload();
+        }
+
+        async function logout() { await db.auth.signOut(); location.reload(); }
+    </script>
 </body>
-
 </html>
+
 
 
 
